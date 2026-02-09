@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Lista 1 - Cyber-Romance Valentine</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,6 +11,8 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -24,11 +26,18 @@
                         'nw-teal': '#009688', 
                         'nw-mint': '#B2DFDB', 
                         'nw-neon': '#64FFDA',
-                        'nw-red': '#FF0055', // Rosso Neon
-                        'nw-pink': '#FF4081' // Rosa
+                        'nw-red': '#FF0055', 
+                        'nw-pink': '#FF4081'
                     },
                     animation: {
                         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'slide-up': 'slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    },
+                    keyframes: {
+                        slideUp: {
+                            '0%': { transform: 'translateY(40px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        }
                     }
                 }
             }
@@ -36,15 +45,26 @@
     </script>
 
     <style>
-        /* --- New Wave Cyber-Romance Styles --- */
-        body {
-            /* Base Oceanic gradient mixed with deep red */
+        /* --- CORE STYLES --- */
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            background: transparent; /* IMPORTANTE: Trasparente per mostrare lo sfondo fisso */
+        }
+
+        /* 1. SFONDO FISSO ANIMATO (Gradiente) */
+        /* Z-Index -50: Dietro a tutto */
+        .fixed-background {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -50;
             background: linear-gradient(-45deg, #001e1a, #2a0015, #004d40, #3d0026);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
-            color: white;
-            min-height: 100vh;
-            overflow-x: hidden;
+            will-change: background-position;
         }
 
         @keyframes gradientBG {
@@ -53,80 +73,56 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Floating Hearts Background */
+        /* 2. PARTICELLE CUORI */
+        /* Z-Index -40: Sopra lo sfondo, sotto il contenuto */
         .hearts-container {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            overflow: hidden; z-index: -1; pointer-events: none;
+            overflow: hidden; 
+            z-index: -40; 
+            pointer-events: none;
         }
+        
         .heart-particle {
             position: absolute;
             bottom: -10vh;
-            font-size: 2rem;
             color: rgba(255, 0, 85, 0.6); 
-            text-shadow: 0 0 5px rgba(255, 64, 129, 0.8);
+            text-shadow: 0 0 10px rgba(255, 64, 129, 0.8);
             animation: floatUp linear infinite;
         }
+
         @keyframes floatUp {
             0% { transform: translateY(0) rotate(0deg); opacity: 0; }
-            10% { opacity: 0.7; }
-            90% { opacity: 0.5; }
-            100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
+            10% { opacity: 0.8; }
+            80% { opacity: 0.6; }
+            100% { transform: translateY(-120vh) rotate(360deg); opacity: 0; }
         }
 
         /* Glassmorphism */
         .glass-panel {
-            background: rgba(40, 0, 20, 0.2);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: rgba(40, 0, 20, 0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 64, 129, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
         }
 
-        /* --- NEW GLOW EFFECTS --- */
-        
-        /* 1. Bagliore BIANCO (White Glow) */
-        .glow-white {
-            text-shadow: 
-                0 0 10px rgba(255, 255, 255, 0.8),
-                0 0 20px rgba(255, 255, 255, 0.5),
-                0 0 30px rgba(255, 255, 255, 0.3);
-        }
+        /* Glow Effects */
+        .glow-white { text-shadow: 0 0 10px rgba(255, 255, 255, 0.9), 0 0 30px rgba(255, 255, 255, 0.6); }
+        .glow-pink { text-shadow: 0 0 10px #FF4081, 0 0 30px #FF0055; }
 
-        /* 2. Bagliore ROSA (Pink Glow) */
-        .glow-pink {
-            text-shadow: 
-                0 0 10px #FF4081,
-                0 0 20px #FF0055,
-                0 0 30px #FF0055;
-        }
+        /* Utilities */
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
 
-        /* 3. Bagliore RED (Standard Neon) */
-        .neon-text-red {
-            text-shadow: 0 0 5px #FF0055, 0 0 15px #FF4081;
-        }
-
-        /* Button Animations */
-        .btn-wave {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative; overflow: hidden;
-        }
-        .btn-wave:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.4); /* White glow on hover */
-        }
-        .btn-wave:active { transform: translateY(0) scale(0.98); }
-
-        /* View Transitions */
         .view-section {
-            display: none; opacity: 0; transition: opacity 0.5s ease-in-out;
+            display: none; opacity: 0; 
+            min-height: 80vh;
+            width: 100%;
         }
         .view-section.active {
-            display: flex; opacity: 1; animation: fadeIn 0.5s ease-out forwards;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            display: flex; opacity: 1; 
         }
 
         /* Loader */
@@ -145,11 +141,13 @@
         .masonry-item { break-inside: avoid; margin-bottom: 1.5rem; }
     </style>
 </head>
-<body class="font-sans antialiased selection:bg-nw-pink selection:text-white">
+<body class="font-sans antialiased text-white selection:bg-nw-pink selection:text-white">
+
+    <div class="fixed-background"></div>
 
     <div class="hearts-container" id="heartsBg"></div>
 
-    <nav class="w-full glass-panel fixed top-0 z-50 px-6 py-4 flex justify-between items-center border-b-nw-red/30">
+    <nav class="w-full glass-panel fixed top-0 z-50 px-6 py-4 flex justify-between items-center border-b-nw-red/30 transition-all duration-300">
         <div class="font-display font-black text-xl tracking-tighter cursor-pointer text-white hover:text-nw-pink transition-colors flex items-center gap-2" onclick="app.router('home')">
             <span class="text-2xl animate-pulse-slow">💖</span> LISTA 1 <span class="text-nw-red glow-pink">NEW WAVE</span>
         </div>
@@ -159,33 +157,32 @@
         </div>
     </nav>
 
-    <main class="relative w-full min-h-screen pt-24 pb-12 px-4 flex flex-col items-center justify-center">
+    <main class="relative w-full min-h-screen pt-24 pb-0 flex flex-col items-center z-10">
 
-        <section id="home-view" class="view-section active flex-col items-center text-center max-w-3xl w-full">
-            <div class="mb-6 relative group">
-                <div class="absolute -inset-8 bg-black/20 rounded-full blur-3xl opacity-60"></div>
-                
-                <h1 class="relative font-display font-black text-7xl md:text-9xl tracking-tighter text-white glow-white pb-4 leading-none">
+        <section id="home-view" class="view-section active flex-col items-center justify-center text-center max-w-3xl w-full px-4">
+            <div class="mb-6 relative group animate-slide-up">
+                <div class="absolute -inset-10 bg-black/30 rounded-full blur-3xl opacity-60"></div>
+                <h1 class="relative font-display font-black text-7xl md:text-9xl tracking-tighter text-white glow-white pb-4 leading-none transform transition hover:scale-105 duration-500">
                     LOVE<br>CYBER<br>WAVE
                 </h1>
             </div>
-            <p class="text-nw-mint text-lg md:text-2xl mb-12 font-medium max-w-xl leading-relaxed drop-shadow-lg">
+            <p class="text-nw-mint text-lg md:text-2xl mb-12 font-medium max-w-xl leading-relaxed drop-shadow-lg animate-slide-up delay-100">
                 San Valentino <span class="text-nw-pink font-bold glow-pink">Lista 1</span>. <br>
                 Dillo con un messaggio anonimo.
             </p>
             
-            <div class="flex flex-col sm:flex-row gap-6 w-full justify-center max-w-md">
-                <button onclick="app.router('send')" class="btn-wave bg-gradient-to-r from-nw-red to-nw-pink text-white font-black py-5 px-10 rounded-2xl text-xl w-full shadow-lg shadow-nw-red/40 flex items-center justify-center gap-3">
+            <div class="flex flex-col sm:flex-row gap-6 w-full justify-center max-w-md animate-slide-up delay-200">
+                <button onclick="app.router('send')" class="transform transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-nw-red/50 bg-gradient-to-r from-nw-red to-nw-pink text-white font-black py-5 px-10 rounded-2xl text-xl w-full shadow-lg shadow-nw-red/40 flex items-center justify-center gap-3">
                     <span>INVIA 💌</span>
                 </button>
-                <button onclick="app.router('wall')" class="btn-wave glass-panel text-nw-pink border-nw-red/50 border-2 font-bold py-5 px-10 rounded-2xl text-xl w-full hover:bg-nw-red/20 flex items-center justify-center gap-3">
+                <button onclick="app.router('wall')" class="transform transition hover:-translate-y-1 glass-panel text-nw-pink border-nw-red/50 border-2 font-bold py-5 px-10 rounded-2xl text-xl w-full hover:bg-nw-red/20 flex items-center justify-center gap-3">
                    <span>BACHECA 💖</span>
                 </button>
             </div>
         </section>
 
-        <section id="send-view" class="view-section flex-col items-center w-full max-w-lg">
-            <div class="glass-panel p-8 md:p-12 rounded-[2rem] w-full relative overflow-hidden border-nw-red/40">
+        <section id="send-view" class="view-section flex-col items-center justify-start pt-10 px-4 w-full max-w-lg mx-auto">
+            <div class="glass-panel p-8 md:p-12 rounded-[2rem] w-full relative overflow-hidden border-nw-red/40 animate-slide-up">
                 <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-nw-red via-nw-pink to-nw-teal"></div>
                 <h2 class="font-display font-black text-4xl mb-8 text-white glow-pink text-center">Scrivi il tuo messaggio</h2>
                 
@@ -208,7 +205,7 @@
                             class="w-full bg-nw-dark/60 border-2 border-nw-pink/30 rounded-xl p-4 text-white placeholder-gray-500 focus:outline-none focus:border-nw-red focus:ring-2 focus:ring-nw-red/50 transition font-medium resize-none"></textarea>
                     </div>
 
-                    <button type="submit" id="submitBtn" class="btn-wave w-full bg-gradient-to-r from-nw-red via-nw-pink to-nw-red text-white font-black text-xl py-4 rounded-xl mt-6 shadow-lg shadow-nw-red/30">
+                    <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-nw-red via-nw-pink to-nw-red text-white font-black text-xl py-4 rounded-xl mt-6 shadow-lg shadow-nw-red/30 transform transition hover:scale-[1.02] active:scale-95">
                         INVIA ORA 🚀
                     </button>
                 </form>
@@ -225,47 +222,47 @@
                 </div>
             </div>
             
-            <button onclick="app.router('home')" class="mt-8 text-nw-pink hover:text-white text-sm font-bold uppercase tracking-widest flex items-center gap-2 transition">
+            <button onclick="app.router('home')" class="mt-8 mb-8 text-nw-pink hover:text-white text-sm font-bold uppercase tracking-widest flex items-center gap-2 transition animate-slide-up delay-100">
                 ← Indietro
             </button>
         </section>
 
-        <section id="wall-view" class="view-section flex-col w-full max-w-7xl">
-            <div class="text-center mb-12 relative">
+        <section id="wall-view" class="view-section flex-col items-center w-full max-w-7xl px-4">
+            <div class="text-center mb-12 relative animate-slide-up">
                 <h2 class="inline-block font-display font-black text-5xl md:text-7xl px-2">
                     <span class="text-white glow-pink">WALL OF</span> <span class="text-nw-pink glow-white">LOVE</span>
                 </h2>
                 <p class="text-white/80 mt-4 font-medium tracking-wider text-xl">Ecco cosa vi scrivono...</p>
             </div>
 
-            <div id="wallContainer" class="masonry-grid w-full px-2 min-h-[50vh]">
+            <div id="wallContainer" class="masonry-grid w-full px-2 min-h-[50vh] animate-slide-up delay-100">
                 <div class="flex justify-center w-full col-span-full py-20">
                     <div class="loader scale-150"></div>
                 </div>
             </div>
 
-            <div class="text-center mt-16">
-                <button onclick="app.router('home')" class="btn-wave glass-panel px-8 py-4 rounded-full text-nw-pink font-bold hover:bg-nw-red/20 transition">
+            <div class="text-center mt-16 mb-20 animate-slide-up delay-200">
+                <button onclick="app.router('home')" class="glass-panel px-8 py-4 rounded-full text-nw-pink font-bold hover:bg-nw-red/20 transition transform hover:scale-105">
                     TORNA ALLA HOME 🏠
                 </button>
             </div>
         </section>
 
-        <section id="admin-login-view" class="view-section flex-col items-center justify-center w-full max-w-md">
-            <div class="glass-panel p-10 rounded-3xl w-full border-2 border-red-600/50 shadow-2xl shadow-red-900/50">
+        <section id="admin-login-view" class="view-section flex-col items-center justify-center w-full max-w-md px-4 mx-auto">
+            <div class="glass-panel p-10 rounded-3xl w-full border-2 border-red-600/50 shadow-2xl shadow-red-900/50 animate-slide-up">
                 <h2 class="font-display font-black text-3xl text-red-500 mb-8 text-center tracking-tight">⚠️ ADMIN ACCESS</h2>
                 <form onsubmit="app.handleAdminLogin(event)" class="space-y-5">
                     <input type="email" id="adminEmail" placeholder="Email Admin" class="w-full bg-black/50 p-4 rounded-xl text-white border border-red-900/50 focus:border-red-500 focus:ring-1 focus:ring-red-500 transition">
                     <input type="password" id="adminPass" placeholder="Password" class="w-full bg-black/50 p-4 rounded-xl text-white border border-red-900/50 focus:border-red-500 focus:ring-1 focus:ring-red-500 transition">
-                    <button type="submit" class="btn-wave w-full bg-gradient-to-r from-red-700 to-red-500 hover:from-red-600 hover:to-red-400 text-white font-black py-4 rounded-xl transition shadow-lg shadow-red-900/40 text-lg">LOGIN SISTEMA</button>
+                    <button type="submit" class="w-full bg-gradient-to-r from-red-700 to-red-500 hover:from-red-600 hover:to-red-400 text-white font-black py-4 rounded-xl transition shadow-lg shadow-red-900/40 text-lg transform hover:scale-[1.02]">LOGIN SISTEMA</button>
                 </form>
                 <p id="loginError" class="text-red-400 font-bold text-sm mt-6 text-center hidden bg-red-900/20 p-2 rounded-lg">Credenziali errate.</p>
             </div>
             <button onclick="app.router('home')" class="mt-6 text-red-400/60 hover:text-red-400 text-sm font-bold uppercase tracking-widest">Annulla Operazione</button>
         </section>
 
-        <section id="admin-dashboard-view" class="view-section flex-col w-full max-w-7xl">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-10 border-b-2 border-red-900/30 pb-6 gap-4">
+        <section id="admin-dashboard-view" class="view-section flex-col w-full max-w-7xl px-4 mx-auto pb-20">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-10 border-b-2 border-red-900/30 pb-6 gap-4 animate-slide-up">
                  <h2 class="font-display font-black text-4xl text-red-500 flex items-center gap-3">
                     🛡️ Moderazione <span class="text-white text-lg font-normal opacity-50">Lista 1</span>
                 </h2>
@@ -274,43 +271,67 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
-                
-                <div class="glass-panel p-6 rounded-2xl border-yellow-500/30 relative">
+            <div class="w-full glass-panel p-6 rounded-2xl border-blue-500/30 mb-8 animate-slide-up delay-100">
+                <h3 class="font-display font-bold text-2xl text-blue-400 mb-4 flex items-center gap-2">
+                    📧 Invia Email Anonima
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                    <div class="col-span-1">
+                        <label class="text-xs text-blue-300 uppercase font-bold">Nome Destinatario</label>
+                        <input type="text" id="emailNameInput" placeholder="Es. Mario Rossi" class="w-full bg-black/40 border border-blue-500/30 rounded-lg p-3 text-white mt-1" oninput="app.generateEmailPreview()">
+                    </div>
+                    <div class="col-span-1">
+                        <label class="text-xs text-blue-300 uppercase font-bold">Email Generata (Modificabile)</label>
+                        <input type="text" id="emailDestInput" class="w-full bg-black/40 border border-blue-500/30 rounded-lg p-3 text-gray-300 mt-1 font-mono text-sm">
+                    </div>
+                    <div class="col-span-1">
+                        <button onclick="app.sendAnonymousEmail()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-blue-900/50">
+                            INVIA COMUNICAZIONE 📨
+                        </button>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">
+                    * Il sistema prova a convertire "Mario Rossi" in "rossi.mario@panettipitagora.edu.it". Controlla sempre prima di inviare.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full animate-slide-up delay-200">
+                <div class="glass-panel p-6 rounded-2xl border-yellow-500/30 relative flex flex-col h-[70vh]">
                     <h3 class="font-display font-bold text-2xl text-yellow-400 mb-6 flex items-center gap-2">
                         ⏳ In Attesa <span class="text-sm opacity-60 font-normal">(Da approvare)</span>
                     </h3>
-                    <div id="adminPendingContainer" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                        <p class="text-gray-400 italic text-center py-10">Caricamento attesa...</p>
+                    <div id="adminPendingContainer" class="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-1">
+                        <p class="text-gray-400 italic text-center py-10">Caricamento...</p>
                     </div>
                 </div>
 
-                <div class="glass-panel p-6 rounded-2xl border-green-500/30 relative">
+                <div class="glass-panel p-6 rounded-2xl border-green-500/30 relative flex flex-col h-[70vh]">
                      <h3 class="font-display font-bold text-2xl text-green-400 mb-6 flex items-center gap-2">
-                        ✅ Già Approvati <span class="text-sm opacity-60 font-normal">(Visibili in bacheca)</span>
+                        ✅ Approvati <span class="text-sm opacity-60 font-normal">(In bacheca)</span>
                     </h3>
-                    <div id="adminApprovedContainer" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                         <p class="text-gray-400 italic text-center py-10">Caricamento approvati...</p>
+                    <div id="adminApprovedContainer" class="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-1">
+                         <p class="text-gray-400 italic text-center py-10">Caricamento...</p>
                     </div>
                 </div>
             </div>
         </section>
 
-    </main>
+        <footer class="w-full text-center py-8 mt-auto z-10 relative">
+            <span id="secretTrigger" class="text-xs text-nw-pink/30 font-bold tracking-widest cursor-pointer hover:text-nw-red transition select-none">
+                ⚡ CREATO PER LA LISTA 1 ⚡
+            </span>
+        </footer>
 
-    <footer class="fixed bottom-4 w-full text-center text-xs text-nw-pink/50 font-bold tracking-widest select-none z-50">
-        <span id="secretTrigger" class="cursor-pointer hover:text-nw-red transition drop-shadow-sm">⚡ CREATO PER LA LISTA 1 ⚡</span>
-    </footer>
+    </main>
 
     <style>
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); rounded: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 0, 85, 0.5); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 0, 85, 0.3); border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 0, 85, 0.8); }
     </style>
 
     <script type="module">
-        // CHIAVI FIREBASE UTENTE
         const firebaseConfig = {
             apiKey: "AIzaSyAV0qbcowIWwGkmsps3bPBX5UhQpiJDAOQ",
             authDomain: "panetti-valentines.firebaseapp.com",
@@ -321,26 +342,29 @@
             measurementId: "G-V6FDZHQVPV"
         };
 
-        // Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // Init Firebase
         const firebaseApp = initializeApp(firebaseConfig);
         const db = getFirestore(firebaseApp);
         const auth = getAuth(firebaseApp);
 
-        // --- BACKGROUND ANIMATION ---
+        // --- EMAIL SENDER (CONFIGURA IL TUO EMAILJS SE VUOI) ---
+        // emailjs.init("LA_TUA_PUBLIC_KEY"); 
+
+        // --- BACKGROUND GENERATOR (CORRETTO) ---
         function createHeartsBg() {
             const container = document.getElementById('heartsBg');
-            const heartCount = 30; // Numero di cuori
-            const colors = ['#FF0055', '#FF4081', '#64FFDA', '#B2DFDB'];
+            const heartCount = 30; // Aumentato un po'
+            const colors = ['#FF0055', '#FF4081', '#64FFDA'];
+
+            container.innerHTML = ''; // Pulisce eventuali vecchi cuori
 
             for (let i = 0; i < heartCount; i++) {
                 const heart = document.createElement('div');
                 heart.className = 'heart-particle';
-                heart.innerHTML = Math.random() > 0.8 ? '⚡' : '💖'; 
+                heart.innerHTML = Math.random() > 0.85 ? '⚡' : '💖'; 
                 
                 const size = Math.random() * 1.5 + 0.8;
                 heart.style.fontSize = `${size}rem`;
@@ -348,17 +372,19 @@
                 heart.style.color = colors[Math.floor(Math.random() * colors.length)];
                 heart.style.opacity = Math.random() * 0.5 + 0.2;
                 
-                const duration = Math.random() * 10 + 8; 
-                const delay = Math.random() * 10;
+                const duration = Math.random() * 12 + 10; 
+                const delay = Math.random() * 15;
                 heart.style.animationDuration = `${duration}s`;
                 heart.style.animationDelay = `-${delay}s`;
 
                 container.appendChild(heart);
             }
         }
+        
+        // Avvia i cuori
         createHeartsBg();
 
-        // --- APP STATE & UTILS ---
+        // --- APP LOGIC ---
         const appState = {
             currentUser: null,
             unsubscribeWall: null,
@@ -367,12 +393,12 @@
             secretClicks: 0
         };
 
-        // --- NAVIGATION ROUTER ---
         window.app = {
             router: (viewName) => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
                 document.querySelectorAll('.view-section').forEach(el => {
                     el.classList.remove('active');
-                    setTimeout(() => { if(!el.classList.contains('active')) el.style.display = 'none'; }, 500);
+                    setTimeout(() => { if(!el.classList.contains('active')) el.style.display = 'none'; }, 300);
                 });
 
                 const target = document.getElementById(`${viewName}-view`);
@@ -385,7 +411,6 @@
                 if (viewName === 'admin-dashboard') loadAdminMessagesV2();
             },
 
-            // --- SEND MESSAGE ---
             sendMessage: async (e) => {
                 e.preventDefault();
                 const loader = document.getElementById('loadingOverlay');
@@ -410,7 +435,6 @@
                 }
             },
 
-            // --- ADMIN AUTH ---
             handleAdminLogin: async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('adminEmail').value;
@@ -427,7 +451,6 @@
                 signOut(auth).then(() => window.app.router('home'));
             },
 
-            // --- ADMIN ACTIONS ---
             approveMsg: async (id) => {
                 if(!auth.currentUser) return;
                 try { await updateDoc(doc(db, "messages", id), { status: "approved" }); } catch(e) { console.error(e); }
@@ -435,18 +458,50 @@
 
             deleteMsg: async (id) => {
                 if(!auth.currentUser) return;
-                if(confirm("Sicuro di voler eliminare definitivamente questo messaggio?")) {
+                if(confirm("Eliminare definitivamente?")) {
                     try { await deleteDoc(doc(db, "messages", id)); } catch(e) { console.error(e); }
                 }
+            },
+
+            // --- EMAIL LOGIC ---
+            generateEmailPreview: () => {
+                const input = document.getElementById('emailNameInput').value.trim().toLowerCase();
+                const destInput = document.getElementById('emailDestInput');
+                
+                if (!input) {
+                    destInput.value = '';
+                    return;
+                }
+
+                const parts = input.split(/\s+/);
+                let emailPrefix = '';
+
+                if (parts.length >= 2) {
+                    const nome = parts[0];
+                    const cognome = parts.slice(1).join('');
+                    emailPrefix = `${cognome}.${nome}`;
+                } else {
+                    emailPrefix = parts[0];
+                }
+
+                emailPrefix = emailPrefix.replace(/[^a-z0-9.]/g, '');
+                destInput.value = `${emailPrefix}@panettipitagora.edu.it`;
+            },
+
+            sendAnonymousEmail: () => {
+                const toEmail = document.getElementById('emailDestInput').value;
+                const subject = "Anonymus - Lista1 San Valentino";
+                const body = "C'è un messaggio speciale per te sulla nostra bacheca di San Valentino.\n\nScopri chi ti ha scritto: https://panetti-valentines.web.app\n\n- Lista 1 New Wave";
+
+                if(!toEmail) { alert("Inserisci un indirizzo email valido."); return; }
+
+                window.location.href = `mailto:${toEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             }
         };
 
         // --- DATA LOADING ---
-
-        // 1. Load Wall (Approved)
         function loadWallMessages() {
             if (appState.unsubscribeWall) appState.unsubscribeWall();
-            
             const q = query(collection(db, "messages"), where("status", "==", "approved"), orderBy("timestamp", "desc"));
             const container = document.getElementById('wallContainer');
             
@@ -459,16 +514,14 @@
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data();
                     const card = document.createElement('div');
-                    card.className = "masonry-item glass-panel p-6 rounded-3xl break-inside-avoid hover:bg-nw-red/10 transition duration-300 border-2 border-transparent hover:border-nw-pink/30 group";
+                    card.className = "masonry-item glass-panel p-6 rounded-3xl break-inside-avoid hover:bg-nw-red/10 transition duration-300 border-2 border-transparent hover:border-nw-pink/30 group animate-slide-up";
                     card.innerHTML = `
                         <div class="flex flex-wrap justify-between items-start mb-4 border-b border-nw-pink/20 pb-3 relative">
                             <div class="absolute -top-2 -left-2 text-3xl opacity-50 group-hover:opacity-100 transition group-hover:scale-110">💌</div>
                             <h3 class="font-bold text-nw-neon text-xl pl-8 pr-2 break-words w-full md:w-auto">Per: <span class="text-white">${escapeHtml(data.to)}</span></h3>
                             ${data.class ? `<span class="text-xs font-bold tracking-wider text-nw-dark bg-nw-pink px-3 py-1 rounded-full mt-2 md:mt-0 whitespace-nowrap shadow-sm shadow-nw-pink/50">${escapeHtml(data.class)}</span>` : ''}
                         </div>
-                        <p class="text-white font-medium text-lg leading-relaxed font-sans italic drop-shadow-sm">
-                            "${escapeHtml(data.message)}"
-                        </p>
+                        <p class="text-white font-medium text-lg leading-relaxed font-sans italic drop-shadow-sm">"${escapeHtml(data.message)}"</p>
                         <div class="mt-4 text-right text-nw-pink/60 text-xs font-bold">💕 LISTA 1 VIBES</div>
                     `;
                     container.appendChild(card);
@@ -476,7 +529,6 @@
             });
         }
 
-        // 2. Load Admin Dashboard V2
         function loadAdminMessagesV2() {
             if (!auth.currentUser) return;
             if (appState.unsubscribeAdminPending) appState.unsubscribeAdminPending();
@@ -485,7 +537,6 @@
             const pendingContainer = document.getElementById('adminPendingContainer');
             const approvedContainer = document.getElementById('adminApprovedContainer');
 
-            // Query 1: PENDING
             const qPending = query(collection(db, "messages"), where("status", "==", "pending"), orderBy("timestamp", "desc"));
             appState.unsubscribeAdminPending = onSnapshot(qPending, (snapshot) => {
                 pendingContainer.innerHTML = '';
@@ -494,7 +545,7 @@
                     const data = docSnap.data();
                     const id = docSnap.id;
                     const card = document.createElement('div');
-                    card.className = "bg-yellow-900/20 p-4 rounded-xl border-l-4 border-yellow-500 backdrop-blur-sm";
+                    card.className = "bg-yellow-900/20 p-4 rounded-xl border-l-4 border-yellow-500 backdrop-blur-sm animate-slide-up";
                     card.innerHTML = `
                         <div class="flex justify-between text-sm text-yellow-300/80 mb-2 font-bold">
                             <span>To: ${escapeHtml(data.to)}</span>
@@ -502,8 +553,8 @@
                         </div>
                         <p class="mb-4 text-white bg-black/40 p-3 rounded-lg italic text-sm border border-white/10">${escapeHtml(data.message)}</p>
                         <div class="flex gap-2">
-                            <button class="approve-btn flex-1 bg-green-600/80 hover:bg-green-500 text-white py-2 rounded-lg text-xs font-black transition uppercase tracking-wider flex items-center justify-center gap-1">✅ Approva</button>
-                            <button class="delete-btn flex-1 bg-red-800/80 hover:bg-red-700 text-white py-2 rounded-lg text-xs font-black transition uppercase tracking-wider flex items-center justify-center gap-1">❌ Elimina</button>
+                            <button class="approve-btn flex-1 bg-green-600/80 hover:bg-green-500 text-white py-2 rounded-lg text-xs font-black transition uppercase tracking-wider flex items-center justify-center gap-1">✅ OK</button>
+                            <button class="delete-btn flex-1 bg-red-800/80 hover:bg-red-700 text-white py-2 rounded-lg text-xs font-black transition uppercase tracking-wider flex items-center justify-center gap-1">❌ NO</button>
                         </div>
                     `;
                     card.querySelector('.approve-btn').onclick = () => window.app.approveMsg(id);
@@ -512,24 +563,23 @@
                 });
             });
 
-            // Query 2: APPROVED
             const qApproved = query(collection(db, "messages"), where("status", "==", "approved"), orderBy("timestamp", "desc"));
             appState.unsubscribeAdminApproved = onSnapshot(qApproved, (snapshot) => {
                 approvedContainer.innerHTML = '';
-                if(snapshot.empty) { approvedContainer.innerHTML = '<div class="text-center text-green-500/50 py-5 font-bold">Bacheca vuota.</div>'; }
+                if(snapshot.empty) { approvedContainer.innerHTML = '<div class="text-center text-green-500/50 py-5 font-bold">Vuoto.</div>'; }
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data();
                     const id = docSnap.id;
                     const card = document.createElement('div');
-                    card.className = "bg-green-900/20 p-4 rounded-xl border-l-4 border-green-500 backdrop-blur-sm";
+                    card.className = "bg-green-900/20 p-4 rounded-xl border-l-4 border-green-500 backdrop-blur-sm animate-slide-up";
                     card.innerHTML = `
                         <div class="flex justify-between text-sm text-green-300/80 mb-2 font-bold">
                              <span>To: ${escapeHtml(data.to)}</span>
-                             <span class="text-xs bg-green-800/50 px-2 rounded">LIVE IN BACHECA</span>
+                             <span class="text-xs bg-green-800/50 px-2 rounded">LIVE</span>
                         </div>
                         <p class="mb-4 text-white bg-black/40 p-3 rounded-lg italic text-sm border border-white/10">${escapeHtml(data.message)}</p>
                          <div class="flex justify-end">
-                            <button class="delete-btn w-full bg-red-950 hover:bg-red-900 text-red-400 py-2 rounded-lg text-xs font-black transition uppercase tracking-wider border border-red-800/50 flex items-center justify-center gap-1">🗑️ Rimuovi dalla Bacheca</button>
+                            <button class="delete-btn w-full bg-red-950 hover:bg-red-900 text-red-400 py-2 rounded-lg text-xs font-black transition uppercase tracking-wider border border-red-800/50 flex items-center justify-center gap-1">🗑️ Rimuovi</button>
                         </div>
                     `;
                     card.querySelector('.delete-btn').onclick = () => window.app.deleteMsg(id);
@@ -538,7 +588,6 @@
             });
         }
 
-        // --- UTILS & LISTENERS ---
         function escapeHtml(text) { if (!text) return ""; return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
         onAuthStateChanged(auth, (user) => {
