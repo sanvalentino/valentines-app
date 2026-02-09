@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista 1 - New Wave Valentine</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Montserrat:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Montserrat', 'sans-serif'],
+                    },
+                    colors: {
+                        'nw-dark': '#002820', // Deep Teal
+                        'nw-persian': '#009688', // Persian Green
+                        'nw-mint': '#B2DFDB', // Light Mint
+                        'nw-neon': '#64FFDA', // Neon Green accent
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* --- New Wave Animations & Styles --- */
+        body {
+            background: linear-gradient(-45deg, #001e1a, #004d40, #00695c, #00251a);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism Card */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Neon Glow Text */
+        .neon-text {
+            text-shadow: 0 0 10px rgba(100, 255, 218, 0.3), 0 0 20px rgba(100, 255, 218, 0.2);
+        }
+
+        /* Button Animations */
+        .btn-wave {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-wave:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(100, 255, 218, 0.4);
+        }
+        .btn-wave:active {
+            transform: translateY(0);
+        }
+
+        /* View Transitions */
+        .view-section {
+            display: none; /* Hidden by default */
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .view-section.active {
+            display: flex; /* Or block, depending on layout */
+            opacity: 1;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Loading Spinner */
+        .loader {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #64FFDA;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Masonry Grid Fix for Wall */
+        .masonry-grid {
+            column-count: 1;
+        }
+        @media (min-width: 640px) { .masonry-grid { column-count: 2; } }
+        @media (min-width: 1024px) { .masonry-grid { column-count: 3; } }
+        
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-nw-neon selection:text-nw-dark">
+
+    <nav class="w-full glass-panel fixed top-0 z-50 px-6 py-4 flex justify-between items-center">
+        <div class="font-display font-black text-xl tracking-tighter cursor-pointer text-white hover:text-nw-neon transition-colors" onclick="app.router('home')">
+            LISTA 1 <span class="text-nw-neon">NEW WAVE</span>
+        </div>
+        <div class="space-x-4 text-sm font-semibold hidden md:block">
+            <button onclick="app.router('home')" class="hover:text-nw-neon transition">HOME</button>
+            <button onclick="app.router('wall')" class="hover:text-nw-neon transition">WALL OF LOVE</button>
+        </div>
+    </nav>
+
+    <main class="relative w-full min-h-screen pt-24 pb-12 px-4 flex flex-col items-center justify-center">
+
+        <section id="home-view" class="view-section active flex-col items-center text-center max-w-2xl w-full">
+            <div class="mb-8 relative group">
+                <div class="absolute -inset-1 bg-gradient-to-r from-nw-persian to-nw-neon rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+                <h1 class="relative font-display font-black text-6xl md:text-8xl tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-nw-mint to-nw-persian neon-text pb-2">
+                    LOVE<br>WAVE
+                </h1>
+            </div>
+            <p class="text-nw-mint text-lg md:text-xl mb-10 font-light max-w-lg leading-relaxed">
+                Il San Valentino del Panetti Pitagora. <br>
+                Invia un messaggio anonimo o leggi la bacheca dell'amore.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
+                <button onclick="app.router('send')" class="btn-wave bg-nw-neon text-nw-dark font-bold py-4 px-8 rounded-xl text-lg w-full sm:w-auto">
+                    Invia Messaggio 💌
+                </button>
+                <button onclick="app.router('wall')" class="btn-wave glass-panel text-white border-nw-neon border border-opacity-30 font-bold py-4 px-8 rounded-xl text-lg w-full sm:w-auto hover:bg-white hover:bg-opacity-10">
+                    Bacheca ❤️
+                </button>
+            </div>
+        </section>
+
+        <section id="send-view" class="view-section flex-col items-center w-full max-w-md">
+            <div class="glass-panel p-8 rounded-3xl w-full relative overflow-hidden">
+                <h2 class="font-display font-bold text-3xl mb-6 text-nw-neon">Scrivi il tuo messaggio</h2>
+                
+                <form id="sendForm" onsubmit="app.sendMessage(event)" class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-bold text-nw-mint uppercase tracking-widest mb-2">Per Chi?</label>
+                        <input type="text" id="toInput" required placeholder="Nome e Cognome" 
+                            class="w-full bg-black bg-opacity-20 border border-nw-persian border-opacity-30 rounded-lg p-3 text-white placeholder-gray-400 focus:outline-none focus:border-nw-neon focus:ring-1 focus:ring-nw-neon transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-nw-mint uppercase tracking-widest mb-2">Classe (Opzionale)</label>
+                        <input type="text" id="classInput" placeholder="Es. 5A INF" 
+                            class="w-full bg-black bg-opacity-20 border border-nw-persian border-opacity-30 rounded-lg p-3 text-white placeholder-gray-400 focus:outline-none focus:border-nw-neon focus:ring-1 focus:ring-nw-neon transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-nw-mint uppercase tracking-widest mb-2">Messaggio</label>
+                        <textarea id="msgInput" required rows="4" placeholder="Scrivi qualcosa di dolce..." 
+                            class="w-full bg-black bg-opacity-20 border border-nw-persian border-opacity-30 rounded-lg p-3 text-white placeholder-gray-400 focus:outline-none focus:border-nw-neon focus:ring-1 focus:ring-nw-neon transition"></textarea>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="btn-wave w-full bg-gradient-to-r from-nw-persian to-nw-dark border border-nw-neon text-white font-bold py-3 rounded-xl mt-4">
+                        INVIA ORA 🚀
+                    </button>
+                </form>
+
+                <div id="successOverlay" class="absolute inset-0 bg-nw-dark bg-opacity-95 flex flex-col items-center justify-center hidden z-10 text-center p-6">
+                    <div class="text-6xl mb-4">✨</div>
+                    <h3 class="font-display font-bold text-2xl text-nw-neon mb-2">Messaggio Inviato!</h3>
+                    <p class="text-gray-300 text-sm">Sarà pubblicato dopo l'approvazione.</p>
+                    <button onclick="app.router('home')" class="mt-6 text-nw-mint underline hover:text-white">Torna alla Home</button>
+                </div>
+
+                <div id="loadingOverlay" class="absolute inset-0 bg-nw-dark bg-opacity-80 flex items-center justify-center hidden z-20">
+                    <div class="loader"></div>
+                </div>
+            </div>
+            
+            <button onclick="app.router('home')" class="mt-8 text-nw-mint hover:text-white text-sm font-semibold flex items-center gap-2">
+                ← Indietro
+            </button>
+        </section>
+
+        <section id="wall-view" class="view-section flex-col w-full max-w-6xl">
+            <div class="text-center mb-10">
+                <h2 class="font-display font-black text-4xl md:text-5xl text-white mb-2">WALL OF <span class="text-nw-neon">LOVE</span></h2>
+                <p class="text-nw-mint">Le dediche approvate della New Wave</p>
+            </div>
+
+            <div id="wallContainer" class="masonry-grid w-full px-2">
+                <div class="flex justify-center w-full col-span-3 py-10">
+                    <div class="loader"></div>
+                </div>
+            </div>
+
+            <div class="text-center mt-12">
+                <button onclick="app.router('home')" class="btn-wave bg-white bg-opacity-10 px-6 py-2 rounded-full text-sm font-semibold hover:bg-opacity-20 transition">
+                    Torna alla Home
+                </button>
+            </div>
+        </section>
+
+        <section id="admin-login-view" class="view-section flex-col items-center justify-center w-full max-w-sm">
+            <div class="glass-panel p-8 rounded-2xl w-full border-red-500 border border-opacity-30">
+                <h2 class="font-display font-bold text-2xl text-red-400 mb-6 text-center">Admin Access</h2>
+                <form onsubmit="app.handleAdminLogin(event)" class="space-y-4">
+                    <input type="email" id="adminEmail" placeholder="Email Admin" class="w-full bg-black bg-opacity-40 p-3 rounded text-white border border-gray-700">
+                    <input type="password" id="adminPass" placeholder="Password" class="w-full bg-black bg-opacity-40 p-3 rounded text-white border border-gray-700">
+                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded transition">LOGIN</button>
+                </form>
+                <p id="loginError" class="text-red-400 text-xs mt-4 text-center hidden">Credenziali errate.</p>
+            </div>
+            <button onclick="app.router('home')" class="mt-4 text-gray-500 hover:text-white text-xs">Annulla</button>
+        </section>
+
+        <section id="admin-dashboard-view" class="view-section flex-col w-full max-w-5xl">
+            <div class="flex justify-between items-center mb-8 border-b border-gray-700 pb-4">
+                <h2 class="font-display font-bold text-3xl">Moderazione</h2>
+                <button onclick="app.logout()" class="text-red-400 text-sm font-bold border border-red-400 px-4 py-2 rounded hover:bg-red-400 hover:text-black transition">LOGOUT</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="adminContainer">
+                <p class="text-gray-400 italic col-span-full text-center">Caricamento messaggi da approvare...</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="fixed bottom-4 w-full text-center text-xs text-nw-mint text-opacity-40 select-none">
+        <span id="secretTrigger" class="cursor-pointer hover:text-white transition">Creato con ⚡ per la Lista 1</span>
+    </footer>
+
+    <script type="module">
+        // Import Firebase SDKs from CDN (Compatibile con browser senza Node.js)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // ==========================================
+        // CONFIGURAZIONE FIREBASE (AGGIORNATA)
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAV0qbcowIWwGkmsps3bPBX5UhQpiJDAOQ",
+            authDomain: "panetti-valentines.firebaseapp.com",
+            projectId: "panetti-valentines",
+            storageBucket: "panetti-valentines.firebasestorage.app",
+            messagingSenderId: "639608037252",
+            appId: "1:639608037252:web:fb83822e3161ddd399c7d1",
+            measurementId: "G-V6FDZHQVPV"
+        };
+
+        // Initialize Firebase
+        const firebaseApp = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(firebaseApp); // Inizializzato (opzionale per questo codice, ma presente)
+        const db = getFirestore(firebaseApp);
+        const auth = getAuth(firebaseApp);
+
+        // --- APP STATE & UTILS ---
+        const appState = {
+            currentUser: null,
+            unsubscribeWall: null,
+            unsubscribeAdmin: null,
+            secretClicks: 0
+        };
+
+        // --- NAVIGATION ROUTER ---
+        window.app = {
+            router: (viewName) => {
+                // Hide all views
+                document.querySelectorAll('.view-section').forEach(el => {
+                    el.classList.remove('active');
+                    setTimeout(() => { if(!el.classList.contains('active')) el.style.display = 'none'; }, 500); // Wait for transition
+                });
+
+                // Show target view
+                const target = document.getElementById(`${viewName}-view`);
+                if (target) {
+                    target.style.display = (viewName === 'wall' || viewName === 'admin-dashboard') ? 'flex' : 'flex'; // maintain flex layout
+                    // Small delay to allow display:flex to apply before opacity transition
+                    setTimeout(() => target.classList.add('active'), 50);
+                }
+
+                // Specific Loaders
+                if (viewName === 'wall') loadWallMessages();
+                if (viewName === 'admin-dashboard') loadAdminMessages();
+            },
+
+            // --- SEND MESSAGE LOGIC ---
+            sendMessage: async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('submitBtn');
+                const loader = document.getElementById('loadingOverlay');
+                const success = document.getElementById('successOverlay');
+                
+                const to = document.getElementById('toInput').value;
+                const userClass = document.getElementById('classInput').value;
+                const msg = document.getElementById('msgInput').value;
+
+                loader.classList.remove('hidden'); // Show spinner
+
+                try {
+                    await addDoc(collection(db, "messages"), {
+                        to: to,
+                        class: userClass,
+                        message: msg,
+                        status: "pending", // Default status
+                        timestamp: serverTimestamp()
+                    });
+
+                    loader.classList.add('hidden');
+                    success.classList.remove('hidden'); // Show success
+                    document.getElementById('sendForm').reset();
+                } catch (error) {
+                    console.error("Error adding document: ", error);
+                    loader.classList.add('hidden');
+                    alert("Errore nell'invio. Controlla la console o la connessione.");
+                }
+            },
+
+            // --- ADMIN LOGIN LOGIC ---
+            handleAdminLogin: async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('adminEmail').value;
+                const pass = document.getElementById('adminPass').value;
+                
+                try {
+                    await signInWithEmailAndPassword(auth, email, pass);
+                    // onAuthStateChanged will handle redirection
+                    document.getElementById('loginError').classList.add('hidden');
+                } catch (error) {
+                    document.getElementById('loginError').classList.remove('hidden');
+                    console.error(error);
+                }
+            },
+
+            logout: () => {
+                signOut(auth).then(() => window.app.router('home'));
+            },
+
+            // --- ADMIN ACTIONS ---
+            approveMsg: async (id) => {
+                if(!auth.currentUser) return;
+                try {
+                    await updateDoc(doc(db, "messages", id), { status: "approved" });
+                } catch(e) { console.error(e); }
+            },
+
+            deleteMsg: async (id) => {
+                if(!auth.currentUser) return;
+                if(confirm("Sei sicuro di voler eliminare questo messaggio?")) {
+                    try {
+                        await deleteDoc(doc(db, "messages", id));
+                    } catch(e) { console.error(e); }
+                }
+            }
+        };
+
+        // --- DATA LOADING FUNCTIONS ---
+
+        // 1. Load Wall (Public Approved Messages)
+        function loadWallMessages() {
+            if (appState.unsubscribeWall) appState.unsubscribeWall(); // Prevent dupes
+
+            const q = query(collection(db, "messages"), where("status", "==", "approved"), orderBy("timestamp", "desc"));
+            const container = document.getElementById('wallContainer');
+            
+            appState.unsubscribeWall = onSnapshot(q, (snapshot) => {
+                container.innerHTML = '';
+                if(snapshot.empty) {
+                    container.innerHTML = '<div class="col-span-full text-center text-gray-400 py-10">Ancora nessun messaggio. Sii il primo!</div>';
+                    return;
+                }
+
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    // Gestione card
+                    const card = document.createElement('div');
+                    card.className = "masonry-item glass-panel p-6 rounded-2xl break-inside-avoid hover:bg-white hover:bg-opacity-10 transition duration-300";
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-3 border-b border-white border-opacity-10 pb-2">
+                            <h3 class="font-bold text-nw-neon text-lg truncate pr-2">Per: ${escapeHtml(data.to)}</h3>
+                            ${data.class ? `<span class="text-xs font-mono text-nw-mint bg-nw-dark px-2 py-1 rounded bg-opacity-50 whitespace-nowrap">${escapeHtml(data.class)}</span>` : ''}
+                        </div>
+                        <p class="text-white font-light text-sm md:text-base leading-relaxed font-sans">
+                            "${escapeHtml(data.message)}"
+                        </p>
+                    `;
+                    container.appendChild(card);
+                });
+            });
+        }
+
+        // 2. Load Admin (Pending Messages)
+        function loadAdminMessages() {
+            if (!auth.currentUser) return;
+            if (appState.unsubscribeAdmin) appState.unsubscribeAdmin();
+
+            const q = query(collection(db, "messages"), where("status", "==", "pending"), orderBy("timestamp", "desc"));
+            const container = document.getElementById('adminContainer');
+
+            appState.unsubscribeAdmin = onSnapshot(q, (snapshot) => {
+                container.innerHTML = '';
+                if(snapshot.empty) {
+                    container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10">Nessun messaggio in attesa.</div>';
+                    return;
+                }
+
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const id = docSnap.id;
+                    const card = document.createElement('div');
+                    card.className = "glass-panel p-5 rounded-xl border-l-4 border-yellow-500";
+                    card.innerHTML = `
+                        <div class="flex justify-between text-xs text-gray-400 mb-2">
+                            <span>To: <strong>${escapeHtml(data.to)}</strong></span>
+                            <span>${data.class || '-'}</span>
+                        </div>
+                        <p class="mb-4 text-sm bg-black bg-opacity-30 p-2 rounded">${escapeHtml(data.message)}</p>
+                        <div class="flex gap-2">
+                            <button class="approve-btn flex-1 bg-green-600 hover:bg-green-500 text-white py-2 rounded text-xs font-bold transition">APPROVA</button>
+                            <button class="delete-btn flex-1 bg-red-800 hover:bg-red-700 text-white py-2 rounded text-xs font-bold transition">ELIMINA</button>
+                        </div>
+                    `;
+                    
+                    // Attach event listeners manually to avoid string escaping issues in onclick
+                    card.querySelector('.approve-btn').onclick = () => window.app.approveMsg(id);
+                    card.querySelector('.delete-btn').onclick = () => window.app.deleteMsg(id);
+                    
+                    container.appendChild(card);
+                });
+            });
+        }
+
+        // --- UTILS ---
+        function escapeHtml(text) {
+            if (!text) return "";
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // --- AUTH STATE LISTENER ---
+        onAuthStateChanged(auth, (user) => {
+            appState.currentUser = user;
+            if (user) {
+                // If on login page, go to dashboard
+                const loginView = document.getElementById('admin-login-view');
+                if (loginView.classList.contains('active')) {
+                    window.app.router('admin-dashboard');
+                }
+            } else {
+                // If on dashboard, kick out
+                const dashView = document.getElementById('admin-dashboard-view');
+                if (dashView.classList.contains('active')) {
+                    window.app.router('home');
+                }
+            }
+        });
+
+        // --- SECRET TRIGGER SETUP ---
+        document.getElementById('secretTrigger').addEventListener('click', () => {
+            appState.secretClicks++;
+            if (appState.secretClicks === 5) {
+                appState.secretClicks = 0;
+                if (appState.currentUser) {
+                    window.app.router('admin-dashboard');
+                } else {
+                    window.app.router('admin-login');
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
