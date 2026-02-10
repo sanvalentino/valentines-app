@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lista 1 - Cyber-Romance Valentine</title>
+    <title>Lista 1 - Valentine's Box</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,9 +22,9 @@
                         display: ['Montserrat', 'sans-serif'],
                     },
                     colors: {
-                        'nw-dark': '#001e1a', 
-                        'nw-neon': '#64FFDA',
-                        'nw-red': '#FF0055', 
+                        'nw-dark': '#1a0005', 
+                        'nw-neon': '#FFB7C5',
+                        'nw-red': '#D32F2F', 
                         'nw-pink': '#FF4081'
                     },
                     animation: {
@@ -50,16 +50,15 @@
             margin: 0;
             padding: 0;
             overflow-x: hidden;
-            background: transparent; /* IMPORTANTE: Trasparente per mostrare lo sfondo fisso */
+            background: transparent;
         }
 
-        /* 1. SFONDO FISSO ANIMATO (Gradiente) */
-        /* Z-Index -50: Dietro a tutto */
+        /* 1. SFONDO FISSO ANIMATO (Gradiente San Valentino) */
         .fixed-background {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: -50;
-            background: linear-gradient(-45deg, #001e1a, #2a0015, #004d40, #3d0026);
+            background: linear-gradient(-45deg, #4a0404, #880e4f, #ad1457, #d32f2f);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
             will-change: background-position;
@@ -72,7 +71,6 @@
         }
 
         /* 2. PARTICELLE CUORI */
-        /* Z-Index -40: Sopra lo sfondo, sotto il contenuto */
         .hearts-container {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -84,8 +82,8 @@
         .heart-particle {
             position: absolute;
             bottom: -10vh;
-            color: rgba(255, 0, 85, 0.6); 
-            text-shadow: 0 0 10px rgba(255, 64, 129, 0.8);
+            color: rgba(255, 64, 129, 0.6); 
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
             animation: floatUp linear infinite;
         }
 
@@ -96,23 +94,28 @@
             100% { transform: translateY(-120vh) rotate(360deg); opacity: 0; }
         }
 
-        /* Glassmorphism */
         .glass-panel {
-            background: rgba(40, 0, 20, 0.3);
+            background: rgba(80, 0, 20, 0.3);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 64, 129, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
         }
 
-        /* Glow Effects */
-        .glow-white { text-shadow: 0 0 10px rgba(255, 255, 255, 0.9), 0 0 30px rgba(255, 255, 255, 0.6); }
-        .glow-pink { text-shadow: 0 0 10px #FF4081, 0 0 30px #FF0055; }
+        /* 3. INVERSIONE BAGLIORI */
+        /* Scritta Bianca -> Bagliore Rosa/Rosso */
+        .glow-white-inv { 
+            color: #ffffff;
+            text-shadow: 0 0 10px #FF4081, 0 0 20px #FF0055, 0 0 30px #FF0055; 
+        }
+        /* Scritta Rosa -> Bagliore Bianco */
+        .glow-pink-inv { 
+            color: #FF4081;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.9), 0 0 25px rgba(255, 255, 255, 0.6); 
+        }
 
-        /* Utilities */
         .delay-100 { animation-delay: 100ms; }
         .delay-200 { animation-delay: 200ms; }
-        .delay-300 { animation-delay: 300ms; }
 
         .view-section {
             display: none; opacity: 0; 
@@ -123,104 +126,96 @@
             display: flex; opacity: 1; 
         }
 
-        /* Loader */
         .loader {
-            border: 4px solid rgba(255, 64, 129, 0.2);
-            border-left-color: #FF0055;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-left-color: #ffffff;
             border-radius: 50%; width: 40px; height: 40px;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Masonry Grid */
         .masonry-grid { column-count: 1; }
         @media (min-width: 640px) { .masonry-grid { column-count: 2; } }
         @media (min-width: 1024px) { .masonry-grid { column-count: 3; } }
         .masonry-item { break-inside: avoid; margin-bottom: 1.5rem; }
     </style>
 </head>
-<body class="font-sans antialiased text-white selection:bg-nw-pink selection:text-white">
+<body class="font-sans antialiased text-white selection:bg-white selection:text-nw-pink">
 
     <div class="fixed-background"></div>
 
     <div class="hearts-container" id="heartsBg"></div>
 
-    <nav class="w-full glass-panel fixed top-0 z-50 px-6 py-4 flex justify-between items-center border-b-nw-red/30 transition-all duration-300">
+    <nav class="w-full glass-panel fixed top-0 z-50 px-6 py-4 flex justify-between items-center border-b-white/10 transition-all duration-300">
         <div class="font-display font-black text-xl tracking-tighter cursor-pointer text-white hover:text-nw-pink transition-colors flex items-center gap-2" onclick="app.router('home')">
-            <span class="text-2xl animate-pulse-slow">💖</span> LISTA 1 <span class="text-nw-red glow-pink">NEW WAVE</span>
+            <span class="text-2xl animate-pulse-slow">💖</span> LISTA 1 <span class="glow-pink-inv">NEW WAVE</span>
         </div>
         <div class="space-x-4 text-sm font-bold tracking-wider hidden md:block">
-            <button onclick="app.router('home')" class="hover:text-nw-red transition">HOME</button>
-            <button onclick="app.router('wall')" class="hover:text-nw-red transition">WALL OF LOVE</button>
+            <button onclick="app.router('home')" class="hover:text-nw-pink transition">HOME</button>
+            <button onclick="app.router('wall')" class="hover:text-nw-pink transition">WALL OF LOVE</button>
         </div>
     </nav>
 
     <main class="relative w-full min-h-screen pt-24 pb-0 flex flex-col items-center z-10">
 
         <section id="home-view" class="view-section active flex-col items-center justify-center text-center max-w-3xl w-full px-4">
-            <div class="mb-6 relative group animate-slide-up">
-                <div class="absolute -inset-10 bg-black/30 rounded-full blur-3xl opacity-60"></div>
-                <h1 class="relative font-display font-black text-7xl md:text-9xl tracking-tighter text-white glow-white pb-4 leading-none transform transition hover:scale-105 duration-500">
-                    BOX<br>di<br>San Valentino
+            <div class="mb-8 relative group animate-slide-up">
+                <div class="absolute -inset-10 bg-pink-600/20 rounded-full blur-3xl opacity-60"></div>
+                <h1 class="relative font-display font-black text-5xl md:text-6xl tracking-tighter glow-white-inv pb-4 leading-tight transform transition hover:scale-105 duration-500 uppercase">
+                    Box<br>
+                    <span class="text-3xl md:text-4xl opacity-90">di</span><br>
+                    San Valentino
                 </h1>
             </div>
-            <p class="text-nw-mint text-lg md:text-2xl mb-12 font-medium max-w-xl leading-relaxed drop-shadow-lg animate-slide-up delay-100">
-                San Valentino <span class="text-nw-pink font-bold glow-pink">Lista 1</span>. <br>
-                Dillo con un messaggio anonimo.
+            <p class="text-white text-lg md:text-xl mb-12 font-medium max-w-xl leading-relaxed drop-shadow-lg animate-slide-up delay-100">
+                Dillo con un messaggio anonimo. <br>
+                <span class="glow-pink-inv font-bold">Lista 1</span>
             </p>
             
             <div class="flex flex-col sm:flex-row gap-6 w-full justify-center max-w-md animate-slide-up delay-200">
-                <button onclick="app.router('send')" class="transform transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-nw-red/50 bg-gradient-to-r from-nw-red to-nw-pink text-white font-black py-5 px-10 rounded-2xl text-xl w-full shadow-lg shadow-nw-red/40 flex items-center justify-center gap-3">
+                <button onclick="app.router('send')" class="transform transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-white/30 bg-white text-nw-pink font-black py-5 px-10 rounded-2xl text-xl w-full shadow-lg flex items-center justify-center gap-3">
                     <span>INVIA 💌</span>
                 </button>
-                <button onclick="app.router('wall')" class="transform transition hover:-translate-y-1 glass-panel text-nw-pink border-nw-red/50 border-2 font-bold py-5 px-10 rounded-2xl text-xl w-full hover:bg-nw-red/20 flex items-center justify-center gap-3">
+                <button onclick="app.router('wall')" class="transform transition hover:-translate-y-1 glass-panel text-white border-white/40 border-2 font-bold py-5 px-10 rounded-2xl text-xl w-full hover:bg-white/10 flex items-center justify-center gap-3">
                    <span>BACHECA 💖</span>
                 </button>
             </div>
         </section>
 
         <section id="send-view" class="view-section flex-col items-center justify-start pt-10 px-4 w-full max-w-lg mx-auto">
-            <div class="glass-panel p-8 md:p-12 rounded-[2rem] w-full relative overflow-hidden border-nw-red/40 animate-slide-up">
-                <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-nw-red via-nw-pink to-nw-teal"></div>
-                <h2 class="font-display font-black text-4xl mb-8 text-white glow-pink text-center">Scrivi il tuo messaggio</h2>
-                
+            <div class="glass-panel p-8 md:p-12 rounded-[2rem] w-full relative overflow-hidden border-white/20 animate-slide-up">
+                <h2 class="font-display font-black text-4xl mb-8 text-white glow-white-inv text-center">Scrivi il tuo messaggio</h2>
                 <form id="sendForm" onsubmit="app.sendMessage(event)" class="space-y-6">
                     <div>
-                        <label class="block text-xs font-bold text-nw-pink uppercase tracking-widest mb-2 ml-1">Per Chi? 💘</label>
+                        <label class="block text-xs font-bold text-white uppercase tracking-widest mb-2 ml-1">Per Chi? 💘</label>
                         <input type="text" id="toInput" required placeholder="Nome e Cognome" 
-                            class="w-full bg-nw-dark/60 border-2 border-nw-pink/30 rounded-xl p-4 text-white placeholder-gray-500 focus:outline-none focus:border-nw-red focus:ring-2 focus:ring-nw-red/50 transition font-medium">
+                            class="w-full bg-black/20 border-2 border-white/20 rounded-xl p-4 text-white placeholder-gray-300 focus:outline-none focus:border-white focus:ring-2 focus:ring-white/50 transition font-medium">
                     </div>
-
                     <div>
-                        <label class="block text-xs font-bold text-nw-pink uppercase tracking-widest mb-2 ml-1">Classe (Opzionale)</label>
+                        <label class="block text-xs font-bold text-white uppercase tracking-widest mb-2 ml-1">Classe (Opzionale)</label>
                         <input type="text" id="classInput" placeholder="Es. 5A INF" 
-                            class="w-full bg-nw-dark/60 border-2 border-nw-pink/30 rounded-xl p-4 text-white placeholder-gray-500 focus:outline-none focus:border-nw-red focus:ring-2 focus:ring-nw-red/50 transition font-medium">
+                            class="w-full bg-black/20 border-2 border-white/20 rounded-xl p-4 text-white placeholder-gray-300 focus:outline-none focus:border-white focus:ring-2 focus:ring-white/50 transition font-medium">
                     </div>
-
                     <div>
-                        <label class="block text-xs font-bold text-nw-pink uppercase tracking-widest mb-2 ml-1">Messaggio 💬</label>
-                        <textarea id="msgInput" required rows="5" placeholder="Scrivi qualcosa che spacca..." 
-                            class="w-full bg-nw-dark/60 border-2 border-nw-pink/30 rounded-xl p-4 text-white placeholder-gray-500 focus:outline-none focus:border-nw-red focus:ring-2 focus:ring-nw-red/50 transition font-medium resize-none"></textarea>
+                        <label class="block text-xs font-bold text-white uppercase tracking-widest mb-2 ml-1">Messaggio 💬</label>
+                        <textarea id="msgInput" required rows="5" placeholder="Il tuo pensiero dolce o divertente..." 
+                            class="w-full bg-black/20 border-2 border-white/20 rounded-xl p-4 text-white placeholder-gray-300 focus:outline-none focus:border-white focus:ring-2 focus:ring-white/50 transition font-medium resize-none"></textarea>
                     </div>
-
-                    <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-nw-red via-nw-pink to-nw-red text-white font-black text-xl py-4 rounded-xl mt-6 shadow-lg shadow-nw-red/30 transform transition hover:scale-[1.02] active:scale-95">
+                    <button type="submit" id="submitBtn" class="w-full bg-white text-nw-pink font-black text-xl py-4 rounded-xl mt-6 shadow-lg transform transition hover:scale-[1.02] active:scale-95">
                         INVIA ORA 🚀
                     </button>
                 </form>
-
-                <div id="successOverlay" class="absolute inset-0 bg-nw-dark/95 flex flex-col items-center justify-center hidden z-10 text-center p-8 backdrop-blur-md">
+                <div id="successOverlay" class="absolute inset-0 bg-nw-red/95 flex flex-col items-center justify-center hidden z-10 text-center p-8 backdrop-blur-md">
                     <div class="text-7xl mb-4 animate-bounce">💖</div>
-                    <h3 class="font-display font-black text-3xl text-white glow-pink mb-4">Messaggio Inviato!</h3>
-                    <p class="text-nw-mint text-lg">In attesa di approvazione.</p>
-                    <button onclick="app.router('home')" class="mt-8 bg-nw-pink/20 px-6 py-3 rounded-full text-nw-pink font-bold hover:bg-nw-pink/40 transition">Torna alla Home</button>
+                    <h3 class="font-display font-black text-3xl text-white glow-white-inv mb-4">Inviato!</h3>
+                    <p class="text-white text-lg">Il messaggio è in coda di approvazione.</p>
+                    <button onclick="app.router('home')" class="mt-8 bg-white/20 px-6 py-3 rounded-full text-white font-bold hover:bg-white/40 transition">Torna alla Home</button>
                 </div>
-
-                <div id="loadingOverlay" class="absolute inset-0 bg-nw-dark/80 flex items-center justify-center hidden z-20 backdrop-blur-sm">
-                    <div class="loader scale-150"></div>
+                <div id="loadingOverlay" class="absolute inset-0 bg-black/60 flex items-center justify-center hidden z-20 backdrop-blur-sm">
+                    <div class="loader"></div>
                 </div>
             </div>
-            
-            <button onclick="app.router('home')" class="mt-8 mb-8 text-nw-pink hover:text-white text-sm font-bold uppercase tracking-widest flex items-center gap-2 transition animate-slide-up delay-100">
+            <button onclick="app.router('home')" class="mt-8 mb-8 text-white/70 hover:text-white text-sm font-bold uppercase tracking-widest flex items-center gap-2 transition animate-slide-up delay-100">
                 ← Indietro
             </button>
         </section>
@@ -228,106 +223,57 @@
         <section id="wall-view" class="view-section flex-col items-center w-full max-w-7xl px-4">
             <div class="text-center mb-12 relative animate-slide-up">
                 <h2 class="inline-block font-display font-black text-5xl md:text-7xl px-2">
-                    <span class="text-white glow-pink">WALL OF</span> <span class="text-nw-pink glow-white">LOVE</span>
+                    <span class="text-white glow-white-inv">WALL OF</span> <span class="glow-pink-inv">LOVE</span>
                 </h2>
-                <p class="text-white/80 mt-4 font-medium tracking-wider text-xl">Ecco cosa vi scrivono...</p>
+                <p class="text-white/80 mt-4 font-medium tracking-wider text-xl">Le vostre dediche...</p>
             </div>
-
             <div id="wallContainer" class="masonry-grid w-full px-2 min-h-[50vh] animate-slide-up delay-100">
-                <div class="flex justify-center w-full col-span-full py-20">
-                    <div class="loader scale-150"></div>
-                </div>
+                 <div class="flex justify-center w-full col-span-full py-20"><div class="loader"></div></div>
             </div>
-
             <div class="text-center mt-16 mb-20 animate-slide-up delay-200">
-                <button onclick="app.router('home')" class="glass-panel px-8 py-4 rounded-full text-nw-pink font-bold hover:bg-nw-red/20 transition transform hover:scale-105">
+                <button onclick="app.router('home')" class="glass-panel px-8 py-4 rounded-full text-white font-bold hover:bg-white/20 transition transform hover:scale-105">
                     TORNA ALLA HOME 🏠
                 </button>
             </div>
         </section>
 
         <section id="admin-login-view" class="view-section flex-col items-center justify-center w-full max-w-md px-4 mx-auto">
-            <div class="glass-panel p-10 rounded-3xl w-full border-2 border-red-600/50 shadow-2xl shadow-red-900/50 animate-slide-up">
-                <h2 class="font-display font-black text-3xl text-red-500 mb-8 text-center tracking-tight">⚠️ ADMIN ACCESS</h2>
+            <div class="glass-panel p-10 rounded-3xl w-full border-2 border-white/20 shadow-2xl animate-slide-up">
+                <h2 class="font-display font-black text-3xl text-white mb-8 text-center tracking-tight">⚠️ ADMIN ACCESS</h2>
                 <form onsubmit="app.handleAdminLogin(event)" class="space-y-5">
-                    <input type="email" id="adminEmail" placeholder="Email Admin" class="w-full bg-black/50 p-4 rounded-xl text-white border border-red-900/50 focus:border-red-500 focus:ring-1 focus:ring-red-500 transition">
-                    <input type="password" id="adminPass" placeholder="Password" class="w-full bg-black/50 p-4 rounded-xl text-white border border-red-900/50 focus:border-red-500 focus:ring-1 focus:ring-red-500 transition">
-                    <button type="submit" class="w-full bg-gradient-to-r from-red-700 to-red-500 hover:from-red-600 hover:to-red-400 text-white font-black py-4 rounded-xl transition shadow-lg shadow-red-900/40 text-lg transform hover:scale-[1.02]">LOGIN SISTEMA</button>
+                    <input type="email" id="adminEmail" placeholder="Email Admin" class="w-full bg-black/30 p-4 rounded-xl text-white border border-white/20 focus:border-white transition">
+                    <input type="password" id="adminPass" placeholder="Password" class="w-full bg-black/30 p-4 rounded-xl text-white border border-white/20 focus:border-white transition">
+                    <button type="submit" class="w-full bg-white text-nw-pink font-black py-4 rounded-xl transition shadow-lg text-lg transform hover:scale-[1.02]">LOGIN</button>
                 </form>
-                <p id="loginError" class="text-red-400 font-bold text-sm mt-6 text-center hidden bg-red-900/20 p-2 rounded-lg">Credenziali errate.</p>
+                <p id="loginError" class="text-white font-bold text-sm mt-6 text-center hidden bg-red-600/50 p-2 rounded-lg">Errore.</p>
             </div>
-            <button onclick="app.router('home')" class="mt-6 text-red-400/60 hover:text-red-400 text-sm font-bold uppercase tracking-widest">Annulla Operazione</button>
+            <button onclick="app.router('home')" class="mt-6 text-white/50 hover:text-white text-sm font-bold uppercase tracking-widest">Annulla</button>
         </section>
 
         <section id="admin-dashboard-view" class="view-section flex-col w-full max-w-7xl px-4 mx-auto pb-20">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-10 border-b-2 border-red-900/30 pb-6 gap-4 animate-slide-up">
-                 <h2 class="font-display font-black text-4xl text-red-500 flex items-center gap-3">
-                    🛡️ Moderazione <span class="text-white text-lg font-normal opacity-50">Lista 1</span>
-                </h2>
-                <button onclick="app.logout()" class="bg-red-950/50 text-red-400 text-sm font-bold border-2 border-red-800/50 px-6 py-3 rounded-xl hover:bg-red-900 hover:text-white transition flex items-center gap-2">
-                    LOGOUT 🔒
-                </button>
+            <div class="flex flex-col md:flex-row justify-between items-center mb-10 border-b-2 border-white/10 pb-6 gap-4 animate-slide-up">
+                 <h2 class="font-display font-black text-4xl text-white flex items-center gap-3">🛡️ Moderazione</h2>
+                <button onclick="app.logout()" class="bg-white/10 text-white text-sm font-bold border-2 border-white/20 px-6 py-3 rounded-xl hover:bg-white hover:text-nw-pink transition">LOGOUT</button>
             </div>
-
-            <div class="w-full glass-panel p-6 rounded-2xl border-blue-500/30 mb-8 animate-slide-up delay-100">
-                <h3 class="font-display font-bold text-2xl text-blue-400 mb-4 flex items-center gap-2">
-                    📧 Invia Email Anonima
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                    <div class="col-span-1">
-                        <label class="text-xs text-blue-300 uppercase font-bold">Nome Destinatario</label>
-                        <input type="text" id="emailNameInput" placeholder="Es. Mario Rossi" class="w-full bg-black/40 border border-blue-500/30 rounded-lg p-3 text-white mt-1" oninput="app.generateEmailPreview()">
-                    </div>
-                    <div class="col-span-1">
-                        <label class="text-xs text-blue-300 uppercase font-bold">Email Generata (Modificabile)</label>
-                        <input type="text" id="emailDestInput" class="w-full bg-black/40 border border-blue-500/30 rounded-lg p-3 text-gray-300 mt-1 font-mono text-sm">
-                    </div>
-                    <div class="col-span-1">
-                        <button onclick="app.sendAnonymousEmail()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-blue-900/50">
-                            INVIA COMUNICAZIONE 📨
-                        </button>
-                    </div>
-                </div>
-                <p class="text-xs text-gray-400 mt-2">
-                    * Il sistema prova a convertire "Mario Rossi" in "rossi.mario@panettipitagora.edu.it". Controlla sempre prima di inviare.
-                </p>
-            </div>
-
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full animate-slide-up delay-200">
-                <div class="glass-panel p-6 rounded-2xl border-yellow-500/30 relative flex flex-col h-[70vh]">
-                    <h3 class="font-display font-bold text-2xl text-yellow-400 mb-6 flex items-center gap-2">
-                        ⏳ In Attesa <span class="text-sm opacity-60 font-normal">(Da approvare)</span>
-                    </h3>
-                    <div id="adminPendingContainer" class="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-1">
-                        <p class="text-gray-400 italic text-center py-10">Caricamento...</p>
-                    </div>
+                <div class="glass-panel p-6 rounded-2xl border-white/20 flex flex-col h-[70vh]">
+                    <h3 class="font-display font-bold text-2xl text-white mb-6">⏳ Da approvare</h3>
+                    <div id="adminPendingContainer" class="space-y-4 overflow-y-auto flex-1 custom-scrollbar"></div>
                 </div>
-
-                <div class="glass-panel p-6 rounded-2xl border-green-500/30 relative flex flex-col h-[70vh]">
-                     <h3 class="font-display font-bold text-2xl text-green-400 mb-6 flex items-center gap-2">
-                        ✅ Approvati <span class="text-sm opacity-60 font-normal">(In bacheca)</span>
-                    </h3>
-                    <div id="adminApprovedContainer" class="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-1">
-                         <p class="text-gray-400 italic text-center py-10">Caricamento...</p>
-                    </div>
+                <div class="glass-panel p-6 rounded-2xl border-white/20 flex flex-col h-[70vh]">
+                     <h3 class="font-display font-bold text-2xl text-white mb-6">✅ Approvati</h3>
+                    <div id="adminApprovedContainer" class="space-y-4 overflow-y-auto flex-1 custom-scrollbar"></div>
                 </div>
             </div>
         </section>
 
         <footer class="w-full text-center py-8 mt-auto z-10 relative">
-            <span id="secretTrigger" class="text-xs text-nw-pink/30 font-bold tracking-widest cursor-pointer hover:text-nw-red transition select-none">
-                ⚡ CREATO PER LA LISTA 1 ⚡
+            <span id="secretTrigger" class="text-xs text-white/40 font-bold tracking-widest cursor-pointer hover:text-white transition select-none">
+                LISTA 1 - VALENTINE EDITION
             </span>
         </footer>
 
     </main>
-
-    <style>
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 0, 85, 0.3); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 0, 85, 0.8); }
-    </style>
 
     <script type="module">
         const firebaseConfig = {
@@ -348,48 +294,30 @@
         const db = getFirestore(firebaseApp);
         const auth = getAuth(firebaseApp);
 
-        // --- EMAIL SENDER (CONFIGURA IL TUO EMAILJS SE VUOI) ---
-        // emailjs.init("LA_TUA_PUBLIC_KEY"); 
-
-        // --- BACKGROUND GENERATOR (CORRETTO) ---
         function createHeartsBg() {
             const container = document.getElementById('heartsBg');
-            const heartCount = 30; // Aumentato un po'
-            const colors = ['#FF0055', '#FF4081', '#64FFDA'];
-
-            container.innerHTML = ''; // Pulisce eventuali vecchi cuori
-
+            const heartCount = 35; 
+            const colors = ['#ffffff', '#FF4081', '#FFB7C5'];
+            container.innerHTML = '';
             for (let i = 0; i < heartCount; i++) {
                 const heart = document.createElement('div');
                 heart.className = 'heart-particle';
-                heart.innerHTML = Math.random() > 0.85 ? '⚡' : '💖'; 
-                
+                heart.innerHTML = '💖'; 
                 const size = Math.random() * 1.5 + 0.8;
                 heart.style.fontSize = `${size}rem`;
                 heart.style.left = `${Math.random() * 100}%`;
                 heart.style.color = colors[Math.floor(Math.random() * colors.length)];
                 heart.style.opacity = Math.random() * 0.5 + 0.2;
-                
                 const duration = Math.random() * 12 + 10; 
                 const delay = Math.random() * 15;
                 heart.style.animationDuration = `${duration}s`;
                 heart.style.animationDelay = `-${delay}s`;
-
                 container.appendChild(heart);
             }
         }
-        
-        // Avvia i cuori
         createHeartsBg();
 
-        // --- APP LOGIC ---
-        const appState = {
-            currentUser: null,
-            unsubscribeWall: null,
-            unsubscribeAdminPending: null,
-            unsubscribeAdminApproved: null,
-            secretClicks: 0
-        };
+        const appState = { currentUser: null, unsubscribeWall: null, unsubscribeAdminPending: null, unsubscribeAdminApproved: null, secretClicks: 0 };
 
         window.app = {
             router: (viewName) => {
@@ -398,23 +326,19 @@
                     el.classList.remove('active');
                     setTimeout(() => { if(!el.classList.contains('active')) el.style.display = 'none'; }, 300);
                 });
-
                 const target = document.getElementById(`${viewName}-view`);
                 if (target) {
                     target.style.display = 'flex';
                     setTimeout(() => target.classList.add('active'), 50);
                 }
-
                 if (viewName === 'wall') loadWallMessages();
                 if (viewName === 'admin-dashboard') loadAdminMessagesV2();
             },
-
             sendMessage: async (e) => {
                 e.preventDefault();
                 const loader = document.getElementById('loadingOverlay');
                 const success = document.getElementById('successOverlay');
                 loader.classList.remove('hidden');
-
                 try {
                     await addDoc(collection(db, "messages"), {
                         to: document.getElementById('toInput').value,
@@ -427,12 +351,10 @@
                     success.classList.remove('hidden');
                     document.getElementById('sendForm').reset();
                 } catch (error) {
-                    console.error("Error:", error);
                     loader.classList.add('hidden');
-                    alert("Errore di connessione.");
+                    alert("Errore invio.");
                 }
             },
-
             handleAdminLogin: async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('adminEmail').value;
@@ -444,83 +366,31 @@
                     document.getElementById('loginError').classList.remove('hidden');
                 }
             },
-
-            logout: () => {
-                signOut(auth).then(() => window.app.router('home'));
-            },
-
-            approveMsg: async (id) => {
-                if(!auth.currentUser) return;
-                try { await updateDoc(doc(db, "messages", id), { status: "approved" }); } catch(e) { console.error(e); }
-            },
-
-            deleteMsg: async (id) => {
-                if(!auth.currentUser) return;
-                if(confirm("Eliminare definitivamente?")) {
-                    try { await deleteDoc(doc(db, "messages", id)); } catch(e) { console.error(e); }
-                }
-            },
-
-            // --- EMAIL LOGIC ---
-            generateEmailPreview: () => {
-                const input = document.getElementById('emailNameInput').value.trim().toLowerCase();
-                const destInput = document.getElementById('emailDestInput');
-                
-                if (!input) {
-                    destInput.value = '';
-                    return;
-                }
-
-                const parts = input.split(/\s+/);
-                let emailPrefix = '';
-
-                if (parts.length >= 2) {
-                    const nome = parts[0];
-                    const cognome = parts.slice(1).join('');
-                    emailPrefix = `${cognome}.${nome}`;
-                } else {
-                    emailPrefix = parts[0];
-                }
-
-                emailPrefix = emailPrefix.replace(/[^a-z0-9.]/g, '');
-                destInput.value = `${emailPrefix}@panettipitagora.edu.it`;
-            },
-
-            sendAnonymousEmail: () => {
-                const toEmail = document.getElementById('emailDestInput').value;
-                const subject = "Anonymus - Lista1 San Valentino";
-                const body = "C'è un messaggio speciale per te sulla nostra bacheca di San Valentino.\n\nScopri chi ti ha scritto: https://panetti-valentines.web.app\n\n- Lista 1 New Wave";
-
-                if(!toEmail) { alert("Inserisci un indirizzo email valido."); return; }
-
-                window.location.href = `mailto:${toEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            }
+            logout: () => { signOut(auth).then(() => window.app.router('home')); },
+            approveMsg: async (id) => { try { await updateDoc(doc(db, "messages", id), { status: "approved" }); } catch(e) {} },
+            deleteMsg: async (id) => { if(confirm("Eliminare?")) { try { await deleteDoc(doc(db, "messages", id)); } catch(e) {} } }
         };
 
-        // --- DATA LOADING ---
         function loadWallMessages() {
             if (appState.unsubscribeWall) appState.unsubscribeWall();
             const q = query(collection(db, "messages"), where("status", "==", "approved"), orderBy("timestamp", "desc"));
             const container = document.getElementById('wallContainer');
-            
             appState.unsubscribeWall = onSnapshot(q, (snapshot) => {
                 container.innerHTML = '';
                 if(snapshot.empty) {
-                    container.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center py-20 text-nw-pink opacity-60"><span class="text-5xl mb-4">💔</span><p class="text-xl font-bold">Ancora nessuna dedica.</p></div>';
+                    container.innerHTML = '<p class="col-span-full text-center py-20 text-white/60">Ancora nessun messaggio.</p>';
                     return;
                 }
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data();
                     const card = document.createElement('div');
-                    card.className = "masonry-item glass-panel p-6 rounded-3xl break-inside-avoid hover:bg-nw-red/10 transition duration-300 border-2 border-transparent hover:border-nw-pink/30 group animate-slide-up";
+                    card.className = "masonry-item glass-panel p-6 rounded-3xl animate-slide-up hover:bg-white/5 transition";
                     card.innerHTML = `
-                        <div class="flex flex-wrap justify-between items-start mb-4 border-b border-nw-pink/20 pb-3 relative">
-                            <div class="absolute -top-2 -left-2 text-3xl opacity-50 group-hover:opacity-100 transition group-hover:scale-110">💌</div>
-                            <h3 class="font-bold text-nw-neon text-xl pl-8 pr-2 break-words w-full md:w-auto">Per: <span class="text-white">${escapeHtml(data.to)}</span></h3>
-                            ${data.class ? `<span class="text-xs font-bold tracking-wider text-nw-dark bg-nw-pink px-3 py-1 rounded-full mt-2 md:mt-0 whitespace-nowrap shadow-sm shadow-nw-pink/50">${escapeHtml(data.class)}</span>` : ''}
+                        <div class="mb-3 border-b border-white/10 pb-2">
+                            <h3 class="font-bold text-white text-lg">Per: ${escapeHtml(data.to)}</h3>
+                            <span class="text-xs text-white/50">${data.class || ''}</span>
                         </div>
-                        <p class="text-white font-medium text-lg leading-relaxed font-sans italic drop-shadow-sm">"${escapeHtml(data.message)}"</p>
-                        <div class="mt-4 text-right text-nw-pink/60 text-xs font-bold">💕 LISTA 1 VIBES</div>
+                        <p class="text-white font-medium italic">"${escapeHtml(data.message)}"</p>
                     `;
                     container.appendChild(card);
                 });
@@ -529,72 +399,35 @@
 
         function loadAdminMessagesV2() {
             if (!auth.currentUser) return;
-            if (appState.unsubscribeAdminPending) appState.unsubscribeAdminPending();
-            if (appState.unsubscribeAdminApproved) appState.unsubscribeAdminApproved();
-
             const pendingContainer = document.getElementById('adminPendingContainer');
             const approvedContainer = document.getElementById('adminApprovedContainer');
-
-            const qPending = query(collection(db, "messages"), where("status", "==", "pending"), orderBy("timestamp", "desc"));
-            appState.unsubscribeAdminPending = onSnapshot(qPending, (snapshot) => {
+            
+            onSnapshot(query(collection(db, "messages"), where("status", "==", "pending")), (snap) => {
                 pendingContainer.innerHTML = '';
-                if(snapshot.empty) { pendingContainer.innerHTML = '<div class="text-center text-yellow-500/50 py-5 font-bold">Nessuna attesa.</div>'; }
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const id = docSnap.id;
-                    const card = document.createElement('div');
-                    card.className = "bg-yellow-900/20 p-4 rounded-xl border-l-4 border-yellow-500 backdrop-blur-sm animate-slide-up";
-                    card.innerHTML = `
-                        <div class="flex justify-between text-sm text-yellow-300/80 mb-2 font-bold">
-                            <span>To: ${escapeHtml(data.to)}</span>
-                            <span>${data.class || ''}</span>
-                        </div>
-                        <p class="mb-4 text-white bg-black/40 p-3 rounded-lg italic text-sm border border-white/10">${escapeHtml(data.message)}</p>
-                        <div class="flex gap-2">
-                            <button class="approve-btn flex-1 bg-green-600/80 hover:bg-green-500 text-white py-2 rounded-lg text-xs font-black transition uppercase tracking-wider flex items-center justify-center gap-1">✅ OK</button>
-                            <button class="delete-btn flex-1 bg-red-800/80 hover:bg-red-700 text-white py-2 rounded-lg text-xs font-black transition uppercase tracking-wider flex items-center justify-center gap-1">❌ NO</button>
-                        </div>
-                    `;
-                    card.querySelector('.approve-btn').onclick = () => window.app.approveMsg(id);
-                    card.querySelector('.delete-btn').onclick = () => window.app.deleteMsg(id);
-                    pendingContainer.appendChild(card);
+                snap.forEach(d => {
+                    const el = document.createElement('div');
+                    el.className = "bg-white/10 p-4 rounded-xl";
+                    el.innerHTML = `<p class="text-xs text-white/50">${d.data().to}</p><p class="my-2">${d.data().message}</p>
+                    <div class="flex gap-2"><button onclick="app.approveMsg('${d.id}')" class="bg-green-500 p-1 rounded flex-1">OK</button><button onclick="app.deleteMsg('${d.id}')" class="bg-red-500 p-1 rounded flex-1">X</button></div>`;
+                    pendingContainer.appendChild(el);
                 });
             });
-
-            const qApproved = query(collection(db, "messages"), where("status", "==", "approved"), orderBy("timestamp", "desc"));
-            appState.unsubscribeAdminApproved = onSnapshot(qApproved, (snapshot) => {
+            onSnapshot(query(collection(db, "messages"), where("status", "==", "approved")), (snap) => {
                 approvedContainer.innerHTML = '';
-                if(snapshot.empty) { approvedContainer.innerHTML = '<div class="text-center text-green-500/50 py-5 font-bold">Vuoto.</div>'; }
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const id = docSnap.id;
-                    const card = document.createElement('div');
-                    card.className = "bg-green-900/20 p-4 rounded-xl border-l-4 border-green-500 backdrop-blur-sm animate-slide-up";
-                    card.innerHTML = `
-                        <div class="flex justify-between text-sm text-green-300/80 mb-2 font-bold">
-                             <span>To: ${escapeHtml(data.to)}</span>
-                             <span class="text-xs bg-green-800/50 px-2 rounded">LIVE</span>
-                        </div>
-                        <p class="mb-4 text-white bg-black/40 p-3 rounded-lg italic text-sm border border-white/10">${escapeHtml(data.message)}</p>
-                         <div class="flex justify-end">
-                            <button class="delete-btn w-full bg-red-950 hover:bg-red-900 text-red-400 py-2 rounded-lg text-xs font-black transition uppercase tracking-wider border border-red-800/50 flex items-center justify-center gap-1">🗑️ Rimuovi</button>
-                        </div>
-                    `;
-                    card.querySelector('.delete-btn').onclick = () => window.app.deleteMsg(id);
-                    approvedContainer.appendChild(card);
+                snap.forEach(d => {
+                    const el = document.createElement('div');
+                    el.className = "bg-white/5 p-4 rounded-xl";
+                    el.innerHTML = `<p class="text-xs text-white/50">${d.data().to}</p><p class="my-2">${d.data().message}</p>
+                    <button onclick="app.deleteMsg('${d.id}')" class="text-red-400 text-xs">Elimina</button>`;
+                    approvedContainer.appendChild(el);
                 });
             });
         }
 
         function escapeHtml(text) { if (!text) return ""; return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
-
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, (user) => { 
             appState.currentUser = user;
-            if (user) {
-                if (document.getElementById('admin-login-view').classList.contains('active')) window.app.router('admin-dashboard');
-            } else {
-                if (document.getElementById('admin-dashboard-view').classList.contains('active')) window.app.router('home');
-            }
+            if (user && document.getElementById('admin-login-view').classList.contains('active')) window.app.router('admin-dashboard');
         });
 
         document.getElementById('secretTrigger').addEventListener('click', () => {
@@ -604,8 +437,6 @@
                 appState.currentUser ? window.app.router('admin-dashboard') : window.app.router('admin-login');
             }
         });
-
     </script>
 </body>
 </html>
-
