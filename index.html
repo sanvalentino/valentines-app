@@ -205,6 +205,30 @@
             margin-top: 0.75rem;
             font-weight: 500;
         }
+
+        /* ADMIN TABS */
+        .admin-tab-btn {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.6);
+        }
+        .admin-tab-btn:hover { background: rgba(255,255,255,0.12); color: white; }
+        .active-tab {
+            background: rgba(255,64,129,0.25) !important;
+            border-color: rgba(255,64,129,0.6) !important;
+            color: white !important;
+        }
+        .admin-panel { display: flex; flex-direction: column; }
+        .admin-panel.hidden { display: none !important; }
+
+        /* EMAIL STATUS BADGES */
+        .email-sent    { background: rgba(34,197,94,0.2); border:1px solid rgba(34,197,94,0.5); color:#4ade80; }
+        .email-failed  { background: rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.5); color:#f87171; }
+        .email-skipped { background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.45); }
+        .email-badge {
+            font-size: 0.65rem; font-weight: 700; border-radius: 999px;
+            padding: 0.1rem 0.55rem; display: inline-block; margin-top: 0.4rem;
+        }
     </style>
 </head>
 <body class="font-sans antialiased text-white selection:bg-white selection:text-nw-pink">
@@ -342,18 +366,34 @@
         </section>
 
         <section id="admin-dashboard-view" class="view-section flex-col w-full max-w-7xl px-4 mx-auto pb-20">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-10 border-b-2 border-white/10 pb-6 gap-4 animate-slide-up">
-                 <h2 class="font-display font-black text-4xl text-white flex items-center gap-3">🛡️ Moderazione</h2>
+            <!-- HEADER -->
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b-2 border-white/10 pb-6 gap-4 animate-slide-up">
+                <div>
+                    <h2 class="font-display font-black text-4xl text-white flex items-center gap-3">🛡️ Moderazione</h2>
+                    <p id="adminWelcomeMsg" class="text-white/60 text-sm mt-1 font-medium"></p>
+                </div>
                 <button onclick="app.logout()" class="bg-white/10 text-white text-sm font-bold border-2 border-white/20 px-6 py-3 rounded-xl hover:bg-white hover:text-nw-pink transition">LOGOUT</button>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full animate-slide-up delay-200">
-                <div class="glass-panel p-6 rounded-2xl border-white/20 flex flex-col h-[70vh]">
-                    <h3 class="font-display font-bold text-2xl text-white mb-6">⏳ Da approvare <span class="count-badge" id="adminPendingCount">0</span></h3>
-                    <div id="adminPendingContainer" class="space-y-4 overflow-y-auto flex-1 custom-scrollbar"></div>
+            <!-- TABS -->
+            <div class="flex gap-2 mb-6 animate-slide-up">
+                <button onclick="app.adminTab('pending')" id="tab-pending" class="admin-tab-btn active-tab px-5 py-2 rounded-xl font-bold text-sm transition">⏳ Da approvare <span class="count-badge" id="adminPendingCount">0</span></button>
+                <button onclick="app.adminTab('approved')" id="tab-approved" class="admin-tab-btn px-5 py-2 rounded-xl font-bold text-sm transition">✅ Approvati <span class="count-badge" id="adminApprovedCount">0</span></button>
+                <button onclick="app.adminTab('searches')" id="tab-searches" class="admin-tab-btn px-5 py-2 rounded-xl font-bold text-sm transition">🔍 Ricerche <span class="count-badge" id="adminSearchCount">0</span></button>
+            </div>
+            <!-- TAB PANELS -->
+            <div class="animate-slide-up delay-200">
+                <div id="adminPanel-pending" class="admin-panel glass-panel p-6 rounded-2xl border-white/20 flex flex-col h-[65vh]">
+                    <div id="adminPendingContainer" class="space-y-4 overflow-y-auto flex-1"></div>
                 </div>
-                <div class="glass-panel p-6 rounded-2xl border-white/20 flex flex-col h-[70vh]">
-                     <h3 class="font-display font-bold text-2xl text-white mb-6">✅ Approvati <span class="count-badge" id="adminApprovedCount">0</span></h3>
-                    <div id="adminApprovedContainer" class="space-y-4 overflow-y-auto flex-1 custom-scrollbar"></div>
+                <div id="adminPanel-approved" class="admin-panel glass-panel p-6 rounded-2xl border-white/20 flex-col h-[65vh] hidden">
+                    <div id="adminApprovedContainer" class="space-y-4 overflow-y-auto flex-1"></div>
+                </div>
+                <div id="adminPanel-searches" class="admin-panel glass-panel p-6 rounded-2xl border-white/20 flex-col h-[65vh] hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <p class="text-white/60 text-xs uppercase tracking-widest font-bold">Ricerche effettuate dagli utenti sul Wall</p>
+                        <button onclick="app.clearSearches()" class="text-red-400 text-xs font-bold hover:text-red-300 transition">🗑 Svuota</button>
+                    </div>
+                    <div id="adminSearchesContainer" class="space-y-2 overflow-y-auto flex-1"></div>
                 </div>
             </div>
         </section>
@@ -384,6 +424,29 @@
         const firebaseApp = initializeApp(firebaseConfig);
         const db = getFirestore(firebaseApp);
         const auth = getAuth(firebaseApp);
+
+        // EmailJS
+        emailjs.init('lE-RieCC6j9_M-S2r');
+
+        // Admin welcome profiles
+        const ADMIN_PROFILES = {
+            'antonio@lista1.com': { greeting: 'Buongiorno', name: 'Antonio' },
+            'admin@lista1.com':   { greeting: 'Benvenuto',  name: 'Danilo'  }
+        };
+
+        // Email helper: "Mario Rossi" → { nome:"mario", cognome:"rossi", email:"rossi.mario@panettipitagora.edu.it" }
+        function buildRecipient(toField) {
+            const parts = toField.trim().toLowerCase().split(/\s+/);
+            if (parts.length < 2) return null; // solo nome → niente email
+            const nome    = parts[0];
+            const cognome = parts[parts.length - 1];
+            return {
+                nome,
+                cognome,
+                email: `${cognome}.${nome}@panettipitagora.edu.it`,
+                displayName: toField.trim()
+            };
+        }
 
         function createHeartsBg() {
             const container = document.getElementById('heartsBg');
@@ -452,6 +515,17 @@
                 if (viewName === 'wall') loadWallMessages();
                 if (viewName === 'admin-dashboard') loadAdminMessagesV2();
             },
+
+            adminTab: (tab) => {
+                ['pending','approved','searches'].forEach(t => {
+                    document.getElementById(`adminPanel-${t}`)?.classList.add('hidden');
+                    document.getElementById(`tab-${t}`)?.classList.remove('active-tab');
+                });
+                document.getElementById(`adminPanel-${tab}`)?.classList.remove('hidden');
+                document.getElementById(`tab-${tab}`)?.classList.add('active-tab');
+                if (tab === 'searches') loadAdminSearches();
+            },
+
             sendMessage: async (e) => {
                 e.preventDefault();
                 const loader = document.getElementById('loadingOverlay');
@@ -473,6 +547,7 @@
                     alert("Errore invio.");
                 }
             },
+
             handleAdminLogin: async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('adminEmail').value;
@@ -484,9 +559,59 @@
                     document.getElementById('loginError').classList.remove('hidden');
                 }
             },
+
             logout: () => { signOut(auth).then(() => window.app.router('home')); },
-            approveMsg: async (id) => { try { await updateDoc(doc(db, "messages", id), { status: "approved" }); } catch(e) {} },
-            deleteMsg: async (id) => { if(confirm("Eliminare?")) { try { await deleteDoc(doc(db, "messages", id)); } catch(e) {} } }
+
+            approveMsg: async (id, toField, messageText) => {
+                try {
+                    const recipient = buildRecipient(toField);
+                    let emailStatus = 'skipped';
+
+                    if (recipient) {
+                        const searchParam = encodeURIComponent(recipient.displayName);
+                        const messageLink = `https://sanvalentino.github.io/valentines-app/?cerca=${searchParam}`;
+                        try {
+                            await emailjs.send('service_9q1hgoj', 'template_mtwvh4w', {
+                                to_email:     recipient.email,
+                                to_name:      recipient.nome.charAt(0).toUpperCase() + recipient.nome.slice(1),
+                                message_link: messageLink
+                            });
+                            emailStatus = 'sent';
+                            console.log(`✅ Email inviata a ${recipient.email}`);
+                        } catch (emailErr) {
+                            emailStatus = 'failed';
+                            console.error(`❌ Email fallita per ${recipient.email}:`, emailErr);
+                        }
+                    } else {
+                        console.log(`⏭️ Nessuna email: nome incompleto per "${toField}"`);
+                    }
+
+                    await updateDoc(doc(db, "messages", id), {
+                        status: "approved",
+                        emailStatus,
+                        emailAddress: recipient ? recipient.email : null
+                    });
+                } catch(e) {
+                    console.error("Errore approvazione:", e);
+                }
+            },
+
+            deleteMsg: async (id) => {
+                if(confirm("Eliminare?")) {
+                    try { await deleteDoc(doc(db, "messages", id)); } catch(e) {}
+                }
+            },
+
+            clearSearches: async () => {
+                if (!confirm("Svuotare tutte le ricerche?")) return;
+                try {
+                    const snap = await new Promise(res => {
+                        const unsub = onSnapshot(collection(db, "searches"), s => { unsub(); res(s); });
+                    });
+                    for (const d of snap.docs) await deleteDoc(doc(db, "searches", d.id));
+                    document.getElementById('adminSearchesContainer').innerHTML = '<p class="text-white/40 text-sm text-center py-10">Nessuna ricerca salvata.</p>';
+                } catch(e) { console.error(e); }
+            }
         };
 
         let wallMessagesCache = [];
@@ -562,12 +687,26 @@
             const searchInput = document.getElementById('wallSearch');
             if (searchInput && !searchInput._listenerAttached) {
                 searchInput._listenerAttached = true;
+                let searchDebounce = null;
                 searchInput.addEventListener('input', () => {
                     const val = searchInput.value.toLowerCase().trim();
                     const filtered = val
                         ? wallMessagesCache.filter(d => d.to && d.to.toLowerCase().includes(val))
                         : wallMessagesCache;
                     renderWallCards(filtered);
+
+                    // Traccia ricerca su Firestore (debounce 1.5s, min 2 char)
+                    clearTimeout(searchDebounce);
+                    if (val.length >= 2) {
+                        searchDebounce = setTimeout(async () => {
+                            try {
+                                await addDoc(collection(db, "searches"), {
+                                    query: val,
+                                    timestamp: serverTimestamp()
+                                });
+                            } catch(e) {}
+                        }, 1500);
+                    }
                 });
             }
         }
@@ -576,38 +715,136 @@
             if (!auth.currentUser) return;
             const pendingContainer = document.getElementById('adminPendingContainer');
             const approvedContainer = document.getElementById('adminApprovedContainer');
-            
-            onSnapshot(query(collection(db, "messages"), where("status", "==", "pending")), (snap) => {
+
+            onSnapshot(query(collection(db, "messages"), where("status", "==", "pending"), orderBy("timestamp", "desc")), (snap) => {
                 pendingContainer.innerHTML = '';
                 const badge = document.getElementById('adminPendingCount');
                 if (badge) badge.textContent = snap.size;
+                if (snap.empty) {
+                    pendingContainer.innerHTML = '<p class="text-white/40 text-sm text-center py-10">Nessun messaggio in attesa.</p>';
+                    return;
+                }
                 snap.forEach(d => {
+                    const data = d.data();
+                    const recipient = buildRecipient(data.to || '');
+                    const emailPreview = recipient
+                        ? `<span class="text-xs text-white/40">📧 ${recipient.email}</span>`
+                        : `<span class="text-xs text-yellow-400/70">⚠️ Nome incompleto – nessuna email</span>`;
                     const el = document.createElement('div');
                     el.className = "bg-white/10 p-4 rounded-xl";
-                    el.innerHTML = `<p class="text-xs text-white/50">${escapeHtml(d.data().to)}</p><p class="my-2">${escapeHtml(d.data().message)}</p>
-                    <div class="flex gap-2"><button onclick="app.approveMsg('${d.id}')" class="bg-green-500 p-1 rounded flex-1">OK</button><button onclick="app.deleteMsg('${d.id}')" class="bg-red-500 p-1 rounded flex-1">X</button></div>`;
+                    el.innerHTML = `
+                        <p class="text-xs text-white/50 font-bold">${escapeHtml(data.to || '')} <span class="text-white/30">${data.class || ''}</span></p>
+                        <p class="my-2 text-white">${escapeHtml(data.message || '')}</p>
+                        ${emailPreview}
+                        <p class="text-xs text-white/30 mb-2">${formatTimestamp(data.timestamp)}</p>
+                        <div class="flex gap-2 mt-2">
+                            <button onclick="app.approveMsg('${d.id}', ${JSON.stringify(data.to || '')}, ${JSON.stringify(data.message || '')})" 
+                                class="bg-green-500 hover:bg-green-400 p-2 rounded-lg flex-1 font-bold text-sm transition">✅ Approva</button>
+                            <button onclick="app.deleteMsg('${d.id}')" 
+                                class="bg-red-500 hover:bg-red-400 p-2 rounded-lg flex-1 font-bold text-sm transition">🗑 Elimina</button>
+                        </div>`;
                     pendingContainer.appendChild(el);
                 });
             });
-            onSnapshot(query(collection(db, "messages"), where("status", "==", "approved")), (snap) => {
+
+            onSnapshot(query(collection(db, "messages"), where("status", "==", "approved"), orderBy("timestamp", "desc")), (snap) => {
                 approvedContainer.innerHTML = '';
                 const badge = document.getElementById('adminApprovedCount');
                 if (badge) badge.textContent = snap.size;
+                if (snap.empty) {
+                    approvedContainer.innerHTML = '<p class="text-white/40 text-sm text-center py-10">Nessun messaggio approvato.</p>';
+                    return;
+                }
                 snap.forEach(d => {
+                    const data = d.data();
+                    let emailBadgeHtml = '';
+                    if (data.emailStatus === 'sent') {
+                        emailBadgeHtml = `<span class="email-badge email-sent">✅ Email inviata a ${escapeHtml(data.emailAddress || '')}</span>`;
+                    } else if (data.emailStatus === 'failed') {
+                        emailBadgeHtml = `<span class="email-badge email-failed">❌ Email fallita – ${escapeHtml(data.emailAddress || '')}</span>`;
+                    } else if (data.emailStatus === 'skipped') {
+                        emailBadgeHtml = `<span class="email-badge email-skipped">⏭️ Nessuna email (nome incompleto)</span>`;
+                    } else {
+                        emailBadgeHtml = `<span class="email-badge email-skipped">⏭️ Approvato senza email</span>`;
+                    }
                     const el = document.createElement('div');
                     el.className = "bg-white/5 p-4 rounded-xl";
-                    el.innerHTML = `<p class="text-xs text-white/50">${escapeHtml(d.data().to)}</p><p class="my-2">${escapeHtml(d.data().message)}</p>
-                    <button onclick="app.deleteMsg('${d.id}')" class="text-red-400 text-xs">Elimina</button>`;
+                    el.innerHTML = `
+                        <p class="text-xs text-white/50 font-bold">${escapeHtml(data.to || '')}</p>
+                        <p class="my-2 text-white text-sm">${escapeHtml(data.message || '')}</p>
+                        ${emailBadgeHtml}
+                        <div class="flex justify-between items-center mt-3">
+                            <span class="text-xs text-white/30">${formatTimestamp(data.timestamp)}</span>
+                            <button onclick="app.deleteMsg('${d.id}')" class="text-red-400 text-xs hover:text-red-300 transition font-bold">🗑 Elimina</button>
+                        </div>`;
                     approvedContainer.appendChild(el);
                 });
             });
         }
 
+        function loadAdminSearches() {
+            const container = document.getElementById('adminSearchesContainer');
+            container.innerHTML = '<div class="flex justify-center py-10"><div class="loader"></div></div>';
+            const q = query(collection(db, "searches"), orderBy("timestamp", "desc"));
+            onSnapshot(q, (snap) => {
+                const badge = document.getElementById('adminSearchCount');
+                if (badge) badge.textContent = snap.size;
+                container.innerHTML = '';
+                if (snap.empty) {
+                    container.innerHTML = '<p class="text-white/40 text-sm text-center py-10">Nessuna ricerca salvata.</p>';
+                    return;
+                }
+                snap.forEach(d => {
+                    const data = d.data();
+                    const el = document.createElement('div');
+                    el.className = "flex justify-between items-center bg-white/5 px-4 py-2 rounded-lg";
+                    el.innerHTML = `
+                        <span class="text-white font-medium">🔍 ${escapeHtml(data.query || '')}</span>
+                        <span class="text-white/40 text-xs">${formatTimestamp(data.timestamp)}</span>`;
+                    container.appendChild(el);
+                });
+            });
+        }
+
         function escapeHtml(text) { if (!text) return ""; return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
-        onAuthStateChanged(auth, (user) => { 
+
+        onAuthStateChanged(auth, (user) => {
             appState.currentUser = user;
-            if (user && document.getElementById('admin-login-view').classList.contains('active')) window.app.router('admin-dashboard');
+            if (user) {
+                // Welcome message personalizzato
+                const profile = ADMIN_PROFILES[user.email];
+                const welcomeEl = document.getElementById('adminWelcomeMsg');
+                if (welcomeEl) {
+                    if (profile) {
+                        welcomeEl.textContent = `${profile.greeting}, ${profile.name}! 👋`;
+                    } else {
+                        const name = user.email.split('@')[0];
+                        welcomeEl.textContent = `Benvenuto, ${name}! 👋`;
+                    }
+                }
+                if (document.getElementById('admin-login-view').classList.contains('active')) {
+                    window.app.router('admin-dashboard');
+                }
+            }
         });
+
+        // Gestione URL ?cerca= → vai al wall con ricerca pre-impostata
+        (function handleUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            const cerca = params.get('cerca');
+            if (cerca) {
+                window.app.router('wall');
+                // Aspetta che il wall sia caricato e imposta la ricerca
+                const trySetSearch = setInterval(() => {
+                    const input = document.getElementById('wallSearch');
+                    if (input) {
+                        input.value = cerca;
+                        input.dispatchEvent(new Event('input'));
+                        clearInterval(trySetSearch);
+                    }
+                }, 200);
+            }
+        })();
 
         document.getElementById('secretTrigger').addEventListener('click', () => {
             appState.secretClicks++;
