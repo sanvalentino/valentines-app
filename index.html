@@ -578,8 +578,10 @@
 
             logout: () => { signOut(auth).then(() => window.app.router('home')); },
 
-            approveMsg: async (id, toField, messageText) => {
+            approveMsg: async (id) => {
                 try {
+                    const cached = pendingDataCache.get(id) || {};
+                    const toField = cached.to || '';
                     const recipient = buildRecipient(toField);
                     let emailStatus = 'skipped';
 
@@ -607,8 +609,10 @@
                         emailStatus,
                         emailAddress: recipient ? recipient.email : null
                     });
+                    pendingDataCache.delete(id);
                 } catch(e) {
                     console.error("Errore approvazione:", e);
+                    alert("Errore durante l'approvazione. Riprova.");
                 }
             },
 
@@ -731,6 +735,7 @@
         };
 
         let wallMessagesCache = [];
+        const pendingDataCache = new Map(); // id → {to, message}
 
         function formatTimestamp(ts) {
             if (!ts) return '';
@@ -842,6 +847,9 @@
                 }
                 snap.forEach(d => {
                     const data = d.data();
+                    // Salva in cache per approveMsg
+                    pendingDataCache.set(d.id, { to: data.to || '', message: data.message || '' });
+
                     const recipient = buildRecipient(data.to || '');
                     const emailPreview = recipient
                         ? `<span class="text-xs text-white/40">📧 ${recipient.email}</span>`
@@ -854,12 +862,18 @@
                         ${emailPreview}
                         <p class="text-xs text-white/30 mb-2">${formatTimestamp(data.timestamp)}</p>
                         <div class="flex gap-2 mt-2">
-                            <button onclick="app.approveMsg('${d.id}', ${JSON.stringify(data.to || '')}, ${JSON.stringify(data.message || '')})" 
-                                class="bg-green-500 hover:bg-green-400 p-2 rounded-lg flex-1 font-bold text-sm transition">✅ Approva</button>
-                            <button onclick="app.deleteMsg('${d.id}')" 
-                                class="bg-red-500 hover:bg-red-400 p-2 rounded-lg flex-1 font-bold text-sm transition">🗑 Elimina</button>
+                            <button data-approve="${d.id}" class="approve-btn bg-green-500 hover:bg-green-400 p-2 rounded-lg flex-1 font-bold text-sm transition">✅ Approva</button>
+                            <button data-delete="${d.id}" class="delete-btn bg-red-500 hover:bg-red-400 p-2 rounded-lg flex-1 font-bold text-sm transition">🗑 Elimina</button>
                         </div>`;
                     pendingContainer.appendChild(el);
+                });
+
+                // Event delegation — evita onclick inline con virgolette
+                pendingContainer.querySelectorAll('.approve-btn').forEach(btn => {
+                    btn.addEventListener('click', () => app.approveMsg(btn.dataset.approve));
+                });
+                pendingContainer.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', () => app.deleteMsg(btn.dataset.delete));
                 });
             });
 
