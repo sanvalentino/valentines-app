@@ -501,7 +501,7 @@
             const diffDays = Math.floor(diffMs / 86400000);
             if (diffMins < 1) return 'proprio ora';
             if (diffMins < 60) return `${diffMins} min fa`;
-            if (diffHours < 24) return `${diffHours} ora${diffHours > 1 ? 'e' : ''} fa`;
+            if (diffHours < 24) return `${diffHours} ${diffHours > 1 ? 'ore' : 'ora'} fa`;
             if (diffDays === 1) return 'ieri';
             if (diffDays < 7) return `${diffDays} giorni fa`;
             return date.toLocaleDateString('it-IT', { day: '2-digit', month: 'short' });
