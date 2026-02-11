@@ -138,6 +138,73 @@
         @media (min-width: 640px) { .masonry-grid { column-count: 2; } }
         @media (min-width: 1024px) { .masonry-grid { column-count: 3; } }
         .masonry-item { break-inside: avoid; margin-bottom: 1.5rem; }
+
+        /* COUNTDOWN */
+        .countdown-box {
+            display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+        }
+        .countdown-unit {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 0.75rem 1.25rem;
+            min-width: 70px;
+            text-align: center;
+        }
+        .countdown-number {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 2rem;
+            line-height: 1;
+            color: #FF4081;
+            text-shadow: 0 0 12px rgba(255,255,255,0.7);
+        }
+        .countdown-label {
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.6);
+            margin-top: 0.25rem;
+        }
+        /* SEARCH BAR */
+        .search-bar {
+            width: 100%; max-width: 480px;
+            background: rgba(0,0,0,0.25);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 1rem;
+            padding: 0.85rem 1.25rem;
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 500;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-bar::placeholder { color: rgba(255,255,255,0.45); }
+        .search-bar:focus { border-color: #FF4081; }
+
+        /* BADGE COUNT */
+        .count-badge {
+            display: inline-block;
+            background: rgba(255,64,129,0.25);
+            border: 1px solid rgba(255,64,129,0.5);
+            color: #FF4081;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 0.15rem 0.65rem;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+
+        /* TIMESTAMP */
+        .msg-timestamp {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.35);
+            margin-top: 0.75rem;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body class="font-sans antialiased text-white selection:bg-white selection:text-nw-pink">
@@ -172,6 +239,20 @@
                 <span class="glow-pink-inv font-bold">Lista 1</span>
             </p>
             
+            <!-- COUNTDOWN SAN VALENTINO -->
+            <div class="mb-10 animate-slide-up delay-100" id="countdownSection">
+                <p class="text-white/60 text-xs font-bold uppercase tracking-widest mb-4">San Valentino tra...</p>
+                <div class="countdown-box" id="countdownBox">
+                    <div class="countdown-unit"><div class="countdown-number" id="cd-days">--</div><div class="countdown-label">Giorni</div></div>
+                    <div class="countdown-unit"><div class="countdown-number" id="cd-hours">--</div><div class="countdown-label">Ore</div></div>
+                    <div class="countdown-unit"><div class="countdown-number" id="cd-mins">--</div><div class="countdown-label">Minuti</div></div>
+                    <div class="countdown-unit"><div class="countdown-number" id="cd-secs">--</div><div class="countdown-label">Secondi</div></div>
+                </div>
+                <div id="valentineMsg" class="hidden text-center mt-2">
+                    <p class="text-2xl font-display font-black glow-pink-inv animate-pulse-slow">💖 Buon San Valentino! 💖</p>
+                </div>
+            </div>
+
             <div class="flex flex-col sm:flex-row gap-6 w-full justify-center max-w-md animate-slide-up delay-200">
                 <button onclick="app.router('send')" class="transform transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-white/30 bg-white text-nw-pink font-black py-5 px-10 rounded-2xl text-xl w-full shadow-lg flex items-center justify-center gap-3">
                     <span>INVIA 💌</span>
@@ -221,11 +302,21 @@
         </section>
 
         <section id="wall-view" class="view-section flex-col items-center w-full max-w-7xl px-4">
-            <div class="text-center mb-12 relative animate-slide-up">
+            <div class="text-center mb-8 relative animate-slide-up">
                 <h2 class="inline-block font-display font-black text-5xl md:text-7xl px-2">
                     <span class="text-white glow-white-inv">WALL OF</span> <span class="glow-pink-inv">LOVE</span>
                 </h2>
-                <p class="text-white/80 mt-4 font-medium tracking-wider text-xl">Le vostre dediche...</p>
+                <p class="text-white/80 mt-4 font-medium tracking-wider text-xl">
+                    Le vostre dediche...
+                    <span class="count-badge" id="wallCountBadge">0</span>
+                </p>
+            </div>
+            <!-- SEARCH BAR -->
+            <div class="w-full flex justify-center mb-8 animate-slide-up delay-100">
+                <div class="relative w-full max-w-md">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">🔍</span>
+                    <input type="text" id="wallSearch" class="search-bar pl-10" placeholder="Cerca per nome destinatario...">
+                </div>
             </div>
             <div id="wallContainer" class="masonry-grid w-full px-2 min-h-[50vh] animate-slide-up delay-100">
                  <div class="flex justify-center w-full col-span-full py-20"><div class="loader"></div></div>
@@ -257,11 +348,11 @@
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full animate-slide-up delay-200">
                 <div class="glass-panel p-6 rounded-2xl border-white/20 flex flex-col h-[70vh]">
-                    <h3 class="font-display font-bold text-2xl text-white mb-6">⏳ Da approvare</h3>
+                    <h3 class="font-display font-bold text-2xl text-white mb-6">⏳ Da approvare <span class="count-badge" id="adminPendingCount">0</span></h3>
                     <div id="adminPendingContainer" class="space-y-4 overflow-y-auto flex-1 custom-scrollbar"></div>
                 </div>
                 <div class="glass-panel p-6 rounded-2xl border-white/20 flex flex-col h-[70vh]">
-                     <h3 class="font-display font-bold text-2xl text-white mb-6">✅ Approvati</h3>
+                     <h3 class="font-display font-bold text-2xl text-white mb-6">✅ Approvati <span class="count-badge" id="adminApprovedCount">0</span></h3>
                     <div id="adminApprovedContainer" class="space-y-4 overflow-y-auto flex-1 custom-scrollbar"></div>
                 </div>
             </div>
@@ -317,6 +408,33 @@
         }
         createHeartsBg();
 
+        // COUNTDOWN SAN VALENTINO
+        function updateCountdown() {
+            const now = new Date();
+            const year = now.getMonth() >= 1 && now.getDate() > 14 ? now.getFullYear() + 1 : now.getFullYear();
+            const vDay = new Date(year, 1, 14, 0, 0, 0); // 14 Feb
+            const diff = vDay - now;
+
+            if (diff <= 0) {
+                document.getElementById('countdownBox')?.classList.add('hidden');
+                document.getElementById('valentineMsg')?.classList.remove('hidden');
+                return;
+            }
+
+            const days    = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours   = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            const pad = n => String(n).padStart(2, '0');
+            document.getElementById('cd-days').textContent  = pad(days);
+            document.getElementById('cd-hours').textContent = pad(hours);
+            document.getElementById('cd-mins').textContent  = pad(minutes);
+            document.getElementById('cd-secs').textContent  = pad(seconds);
+        }
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
         const appState = { currentUser: null, unsubscribeWall: null, unsubscribeAdminPending: null, unsubscribeAdminApproved: null, secretClicks: 0 };
 
         window.app = {
@@ -371,30 +489,87 @@
             deleteMsg: async (id) => { if(confirm("Eliminare?")) { try { await deleteDoc(doc(db, "messages", id)); } catch(e) {} } }
         };
 
+        let wallMessagesCache = [];
+
+        function formatTimestamp(ts) {
+            if (!ts) return '';
+            const date = ts.toDate ? ts.toDate() : new Date(ts);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+            if (diffMins < 1) return 'proprio ora';
+            if (diffMins < 60) return `${diffMins} min fa`;
+            if (diffHours < 24) return `${diffHours} ora${diffHours > 1 ? 'e' : ''} fa`;
+            if (diffDays === 1) return 'ieri';
+            if (diffDays < 7) return `${diffDays} giorni fa`;
+            return date.toLocaleDateString('it-IT', { day: '2-digit', month: 'short' });
+        }
+
+        function renderWallCards(messages) {
+            const container = document.getElementById('wallContainer');
+            container.innerHTML = '';
+            if (messages.length === 0) {
+                container.innerHTML = '<p class="col-span-full text-center py-20 text-white/60">Nessun messaggio trovato.</p>';
+                return;
+            }
+            messages.forEach((data) => {
+                const card = document.createElement('div');
+                card.className = "masonry-item glass-panel p-6 rounded-3xl animate-slide-up hover:bg-white/5 transition";
+                card.innerHTML = `
+                    <div class="mb-3 border-b border-white/10 pb-2">
+                        <h3 class="font-bold text-white text-lg">Per: ${escapeHtml(data.to)}</h3>
+                        <span class="text-xs text-white/50">${data.class || ''}</span>
+                    </div>
+                    <p class="text-white font-medium italic">"${escapeHtml(data.message)}"</p>
+                    <p class="msg-timestamp">🕐 ${formatTimestamp(data.timestamp)}</p>
+                `;
+                container.appendChild(card);
+            });
+        }
+
         function loadWallMessages() {
             if (appState.unsubscribeWall) appState.unsubscribeWall();
             const q = query(collection(db, "messages"), where("status", "==", "approved"), orderBy("timestamp", "desc"));
             const container = document.getElementById('wallContainer');
+            container.innerHTML = '<div class="flex justify-center w-full col-span-full py-20"><div class="loader"></div></div>';
+
             appState.unsubscribeWall = onSnapshot(q, (snapshot) => {
-                container.innerHTML = '';
-                if(snapshot.empty) {
+                wallMessagesCache = [];
+                snapshot.forEach((docSnap) => {
+                    wallMessagesCache.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                // Update live count badge
+                const badge = document.getElementById('wallCountBadge');
+                if (badge) badge.textContent = wallMessagesCache.length;
+
+                // Apply current search filter
+                const searchVal = (document.getElementById('wallSearch')?.value || '').toLowerCase().trim();
+                const filtered = searchVal
+                    ? wallMessagesCache.filter(d => d.to && d.to.toLowerCase().includes(searchVal))
+                    : wallMessagesCache;
+
+                if (snapshot.empty) {
                     container.innerHTML = '<p class="col-span-full text-center py-20 text-white/60">Ancora nessun messaggio.</p>';
                     return;
                 }
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const card = document.createElement('div');
-                    card.className = "masonry-item glass-panel p-6 rounded-3xl animate-slide-up hover:bg-white/5 transition";
-                    card.innerHTML = `
-                        <div class="mb-3 border-b border-white/10 pb-2">
-                            <h3 class="font-bold text-white text-lg">Per: ${escapeHtml(data.to)}</h3>
-                            <span class="text-xs text-white/50">${data.class || ''}</span>
-                        </div>
-                        <p class="text-white font-medium italic">"${escapeHtml(data.message)}"</p>
-                    `;
-                    container.appendChild(card);
-                });
+                renderWallCards(filtered);
             });
+
+            // Wire up search input (once)
+            const searchInput = document.getElementById('wallSearch');
+            if (searchInput && !searchInput._listenerAttached) {
+                searchInput._listenerAttached = true;
+                searchInput.addEventListener('input', () => {
+                    const val = searchInput.value.toLowerCase().trim();
+                    const filtered = val
+                        ? wallMessagesCache.filter(d => d.to && d.to.toLowerCase().includes(val))
+                        : wallMessagesCache;
+                    renderWallCards(filtered);
+                });
+            }
         }
 
         function loadAdminMessagesV2() {
@@ -404,20 +579,24 @@
             
             onSnapshot(query(collection(db, "messages"), where("status", "==", "pending")), (snap) => {
                 pendingContainer.innerHTML = '';
+                const badge = document.getElementById('adminPendingCount');
+                if (badge) badge.textContent = snap.size;
                 snap.forEach(d => {
                     const el = document.createElement('div');
                     el.className = "bg-white/10 p-4 rounded-xl";
-                    el.innerHTML = `<p class="text-xs text-white/50">${d.data().to}</p><p class="my-2">${d.data().message}</p>
+                    el.innerHTML = `<p class="text-xs text-white/50">${escapeHtml(d.data().to)}</p><p class="my-2">${escapeHtml(d.data().message)}</p>
                     <div class="flex gap-2"><button onclick="app.approveMsg('${d.id}')" class="bg-green-500 p-1 rounded flex-1">OK</button><button onclick="app.deleteMsg('${d.id}')" class="bg-red-500 p-1 rounded flex-1">X</button></div>`;
                     pendingContainer.appendChild(el);
                 });
             });
             onSnapshot(query(collection(db, "messages"), where("status", "==", "approved")), (snap) => {
                 approvedContainer.innerHTML = '';
+                const badge = document.getElementById('adminApprovedCount');
+                if (badge) badge.textContent = snap.size;
                 snap.forEach(d => {
                     const el = document.createElement('div');
                     el.className = "bg-white/5 p-4 rounded-xl";
-                    el.innerHTML = `<p class="text-xs text-white/50">${d.data().to}</p><p class="my-2">${d.data().message}</p>
+                    el.innerHTML = `<p class="text-xs text-white/50">${escapeHtml(d.data().to)}</p><p class="my-2">${escapeHtml(d.data().message)}</p>
                     <button onclick="app.deleteMsg('${d.id}')" class="text-red-400 text-xs">Elimina</button>`;
                     approvedContainer.appendChild(el);
                 });
