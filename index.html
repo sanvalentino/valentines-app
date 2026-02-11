@@ -372,7 +372,23 @@
                     <h2 class="font-display font-black text-4xl text-white flex items-center gap-3">🛡️ Moderazione</h2>
                     <p id="adminWelcomeMsg" class="text-white/60 text-sm mt-1 font-medium"></p>
                 </div>
-                <button onclick="app.logout()" class="bg-white/10 text-white text-sm font-bold border-2 border-white/20 px-6 py-3 rounded-xl hover:bg-white hover:text-nw-pink transition">LOGOUT</button>
+                <div class="flex gap-3 flex-wrap justify-end">
+                    <button onclick="app.bulkSendEmails()" id="bulkEmailBtn" class="bg-pink-600/80 hover:bg-pink-500 text-white text-sm font-bold border border-pink-400/50 px-5 py-3 rounded-xl transition flex items-center gap-2">
+                        📧 Invia email a tutti gli approvati
+                    </button>
+                    <button onclick="app.logout()" class="bg-white/10 text-white text-sm font-bold border-2 border-white/20 px-6 py-3 rounded-xl hover:bg-white hover:text-nw-pink transition">LOGOUT</button>
+                </div>
+            </div>
+            <!-- BULK EMAIL PROGRESS -->
+            <div id="bulkEmailProgress" class="hidden glass-panel p-5 rounded-2xl mb-6 animate-slide-up">
+                <div class="flex justify-between items-center mb-2">
+                    <p class="text-white font-bold text-sm" id="bulkEmailStatus">Invio in corso...</p>
+                    <span id="bulkEmailCounter" class="text-white/60 text-xs font-mono"></span>
+                </div>
+                <div class="w-full bg-white/10 rounded-full h-3">
+                    <div id="bulkEmailBar" class="bg-gradient-to-r from-pink-500 to-red-400 h-3 rounded-full transition-all duration-300" style="width:0%"></div>
+                </div>
+                <div id="bulkEmailLog" class="mt-3 max-h-32 overflow-y-auto space-y-1 text-xs font-mono"></div>
             </div>
             <!-- TABS -->
             <div class="flex gap-2 mb-6 animate-slide-up">
@@ -418,7 +434,7 @@
         };
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, where, orderBy, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseApp = initializeApp(firebaseConfig);
@@ -611,6 +627,106 @@
                     for (const d of snap.docs) await deleteDoc(doc(db, "searches", d.id));
                     document.getElementById('adminSearchesContainer').innerHTML = '<p class="text-white/40 text-sm text-center py-10">Nessuna ricerca salvata.</p>';
                 } catch(e) { console.error(e); }
+            },
+
+            bulkSendEmails: async () => {
+                if (!confirm("Inviare email a TUTTI i messaggi approvati che non l'hanno ancora ricevuta?\n\nQuesta operazione potrebbe inviare fino a 100+ email.")) return;
+
+                const progressBox  = document.getElementById('bulkEmailProgress');
+                const statusEl     = document.getElementById('bulkEmailStatus');
+                const counterEl    = document.getElementById('bulkEmailCounter');
+                const barEl        = document.getElementById('bulkEmailBar');
+                const logEl        = document.getElementById('bulkEmailLog');
+                const btn          = document.getElementById('bulkEmailBtn');
+
+                progressBox.classList.remove('hidden');
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                logEl.innerHTML = '';
+
+                const addLog = (msg, color = 'text-white/50') => {
+                    const line = document.createElement('p');
+                    line.className = color;
+                    line.textContent = msg;
+                    logEl.prepend(line);
+                };
+
+                try {
+                    // Carica tutti gli approvati senza emailStatus
+                    const snap = await getDocs(query(collection(db, "messages"), where("status", "==", "approved")));
+                    const toProcess = [];
+                    snap.forEach(d => {
+                        const data = d.data();
+                        if (!data.emailStatus) toProcess.push({ id: d.id, ...data });
+                    });
+
+                    if (toProcess.length === 0) {
+                        statusEl.textContent = '✅ Tutti i messaggi approvati hanno già ricevuto l\'email!';
+                        barEl.style.width = '100%';
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        return;
+                    }
+
+                    statusEl.textContent = `Invio in corso... (0 / ${toProcess.length})`;
+                    let sent = 0, failed = 0, skipped = 0;
+
+                    for (let i = 0; i < toProcess.length; i++) {
+                        const item = toProcess[i];
+                        const recipient = buildRecipient(item.to || '');
+                        let emailStatus = 'skipped';
+
+                        if (recipient) {
+                            try {
+                                const searchParam = encodeURIComponent(recipient.displayName);
+                                const messageLink = `https://sanvalentino.github.io/valentines-app/?cerca=${searchParam}`;
+                                await emailjs.send('service_9q1hgoj', 'template_mtwvh4w', {
+                                    to_email:     recipient.email,
+                                    to_name:      recipient.nome.charAt(0).toUpperCase() + recipient.nome.slice(1),
+                                    message_link: messageLink
+                                });
+                                emailStatus = 'sent';
+                                sent++;
+                                addLog(`✅ Inviata → ${recipient.email}`, 'text-green-400');
+                                console.log(`✅ [${i+1}/${toProcess.length}] Email inviata a ${recipient.email}`);
+                            } catch(err) {
+                                emailStatus = 'failed';
+                                failed++;
+                                addLog(`❌ Fallita → ${recipient.email}`, 'text-red-400');
+                                console.error(`❌ [${i+1}/${toProcess.length}] Fallita per ${recipient.email}:`, err);
+                            }
+                        } else {
+                            skipped++;
+                            addLog(`⏭️ Skip → "${item.to}" (nome incompleto)`, 'text-white/30');
+                        }
+
+                        // Aggiorna Firestore
+                        await updateDoc(doc(db, "messages", item.id), {
+                            emailStatus,
+                            emailAddress: recipient ? recipient.email : null
+                        });
+
+                        // Aggiorna UI
+                        const progress = Math.round(((i + 1) / toProcess.length) * 100);
+                        barEl.style.width = `${progress}%`;
+                        counterEl.textContent = `${i + 1} / ${toProcess.length}`;
+                        statusEl.textContent = `Invio in corso... (${i + 1} / ${toProcess.length})`;
+
+                        // Pausa tra invii per non superare i limiti EmailJS
+                        if (i < toProcess.length - 1) await new Promise(r => setTimeout(r, 300));
+                    }
+
+                    statusEl.textContent = `🎉 Completato! ✅ ${sent} inviate  ❌ ${failed} fallite  ⏭️ ${skipped} skip`;
+                    barEl.style.width = '100%';
+                    console.log(`\n📊 Riepilogo bulk: ${sent} inviate, ${failed} fallite, ${skipped} saltate`);
+
+                } catch(err) {
+                    statusEl.textContent = '❌ Errore durante il processo.';
+                    console.error('Errore bulk:', err);
+                }
+
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
         };
 
