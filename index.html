@@ -405,6 +405,11 @@
                    <span>BACHECA 💖</span>
                 </button>
             </div>
+
+            <!-- Tasto quasi invisibile per disattivare i cuori di sfondo -->
+            <button id="toggleHeartsBtn" class="mt-4 text-[9px] text-white/10 hover:text-white/40 tracking-[0.25em] uppercase font-bold self-end pr-2 select-none">
+                bg ♥
+            </button>
         </section>
 
         <section id="send-view" class="view-section flex-col items-center justify-start pt-10 px-4 w-full max-w-lg mx-auto">
@@ -483,25 +488,6 @@
                 </button>
             </div>
         </section>
-
-        <!-- MODAL DETTAGLIO MESSAGGIO WALL -->
-        <div id="messageModal" class="modal-backdrop hidden">
-            <div class="modal-card glass-panel p-8 md:p-10 relative border border-white/20 shadow-2xl">
-                <button onclick="closeMessageModal()" class="absolute top-4 right-4 text-white/60 hover:text-white text-xl font-bold leading-none">
-                    ×
-                </button>
-                <div class="mb-4 border-b border-white/10 pb-3">
-                    <p class="text-xs uppercase tracking-widest text-white/50 font-bold mb-1">Per</p>
-                    <h3 id="modalTo" class="font-display font-black text-2xl text-white"></h3>
-                    <p id="modalClass" class="text-xs text-white/50 mt-1"></p>
-                </div>
-                <p class="text-white font-medium italic text-lg mb-4" id="modalMessage"></p>
-                <p class="msg-timestamp" id="modalTime"></p>
-                <div class="mt-6 text-right">
-                    <button onclick="closeMessageModal()" class="filter-pill-btn">Chiudi</button>
-                </div>
-            </div>
-        </div>
 
         <section id="admin-login-view" class="view-section flex-col items-center justify-center w-full max-w-md px-4 mx-auto">
             <div class="glass-panel p-10 rounded-3xl w-full border-2 border-white/20 shadow-2xl animate-slide-up">
@@ -619,8 +605,22 @@
             };
         }
 
+        const HEARTS_STORAGE_KEY = 'valentines_hearts_bg';
+        let heartsBgEnabled = true;
+        try {
+            const stored = localStorage.getItem(HEARTS_STORAGE_KEY);
+            if (stored === '0') heartsBgEnabled = false;
+        } catch(e) {}
+
         function createHeartsBg() {
             const container = document.getElementById('heartsBg');
+            if (!container) return;
+            if (!heartsBgEnabled) {
+                container.innerHTML = '';
+                container.style.display = 'none';
+                return;
+            }
+            container.style.display = 'block';
             // leggermente ridotto per alleggerire la pagina senza perdere l'effetto
             const heartCount = 22; 
             const colors = ['#ffffff', '#FF4081', '#FFB7C5'];
@@ -641,6 +641,13 @@
                 container.appendChild(heart);
             }
         }
+
+        function setHeartsEnabled(enabled) {
+            heartsBgEnabled = enabled;
+            try { localStorage.setItem(HEARTS_STORAGE_KEY, enabled ? '1' : '0'); } catch(e) {}
+            createHeartsBg();
+        }
+
         createHeartsBg();
 
         // COUNTDOWN SAN VALENTINO
@@ -888,6 +895,48 @@
 
                 btn.disabled = false;
                 btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            },
+
+            adminAdjustLikes: async (id, delta) => {
+                try {
+                    const msgRef = doc(db, "messages", id);
+                    const current = wallMessagesCache.find(m => m.id === id);
+                    const currentLikes = current && typeof current.likes === 'number' ? current.likes : 0;
+                    const next = Math.max(0, currentLikes + delta);
+                    await updateDoc(msgRef, { likes: next });
+                } catch (e) {
+                    console.error('Errore modifica cuori admin:', e);
+                    alert('Errore durante la modifica dei cuori.');
+                }
+            },
+
+            saveReply: async (id) => {
+                try {
+                    const textarea = document.querySelector(`textarea[data-reply-for="${id}"]`);
+                    if (!textarea) return;
+                    const reply = textarea.value.trim();
+                    await updateDoc(doc(db, "messages", id), {
+                        reply: reply || null,
+                        replyTimestamp: reply ? serverTimestamp() : null
+                    });
+                } catch (e) {
+                    console.error('Errore salvataggio risposta:', e);
+                    alert('Errore durante il salvataggio della risposta.');
+                }
+            },
+
+            clearReply: async (id) => {
+                try {
+                    const textarea = document.querySelector(`textarea[data-reply-for="${id}"]`);
+                    if (textarea) textarea.value = '';
+                    await updateDoc(doc(db, "messages", id), {
+                        reply: null,
+                        replyTimestamp: null
+                    });
+                } catch (e) {
+                    console.error('Errore svuotamento risposta:', e);
+                    alert('Errore durante lo svuotamento della risposta.');
+                }
             }
         };
 
@@ -957,6 +1006,7 @@
                 const safeMsg = escapeHtml(data.message || '');
                 const likeCount = typeof data.likes === 'number' ? data.likes : 0;
                 const isLiked = likedMessageIds.has(data.id);
+                const replyText = data.reply || '';
 
                 const card = document.createElement('div');
                 card.className = "masonry-item";
@@ -975,6 +1025,10 @@
                             </button>
                             <button class="wall-share-btn" data-share-id="${data.id}">Copia link del messaggio</button>
                         </div>
+                        ${replyText ? `<div class="mt-3 pt-2 border-t border-white/10 text-left">
+                            <p class="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-1">Risposta</p>
+                            <p class="text-xs text-white/80">${escapeHtml(replyText)}</p>
+                        </div>` : ''}
                     </div>
                 `;
                 container.appendChild(card);
@@ -1226,13 +1280,32 @@
                     } else {
                         emailBadgeHtml = `<span class="email-badge email-skipped">⏭️ Approvato senza email</span>`;
                     }
+                    const currentLikes = typeof data.likes === 'number' ? data.likes : 0;
+                    const replyText = data.reply || '';
                     const el = document.createElement('div');
-                    el.className = "bg-white/5 p-4 rounded-xl";
+                    el.className = "bg-white/5 p-4 rounded-xl space-y-2";
                     el.innerHTML = `
                         <p class="text-xs text-white/50 font-bold">${escapeHtml(data.to || '')}</p>
-                        <p class="my-2 text-white text-sm">${escapeHtml(data.message || '')}</p>
+                        <p class="text-white text-sm">${escapeHtml(data.message || '')}</p>
                         ${emailBadgeHtml}
-                        <div class="flex justify-between items-center mt-3">
+                        <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-white/60">
+                            <span class="font-bold uppercase tracking-widest">Cuori:</span>
+                            <button onclick="app.adminAdjustLikes('${d.id}', -1)" class="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-bold">-</button>
+                            <span class="px-2 py-1 rounded-lg bg-black/20 border border-white/15 font-mono min-w-[2.5rem] text-center">${currentLikes}</span>
+                            <button onclick="app.adminAdjustLikes('${d.id}', 1)" class="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-bold">+</button>
+                        </div>
+                        <div class="mt-2">
+                            <p class="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-1">Risposta (visibile sul Wall)</p>
+                            <textarea data-reply-for="${d.id}" rows="2" class="w-full text-xs bg-black/30 border border-white/15 rounded-lg px-2 py-1 text-white placeholder-white/30 focus:outline-none focus:border-white/60 resize-none" placeholder="Scrivi una risposta...">${escapeHtml(replyText)}</textarea>
+                            <div class="flex justify-between items-center mt-1">
+                                <span class="text-[10px] text-white/30">${formatTimestamp(data.replyTimestamp)}</span>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="app.saveReply('${d.id}')" class="px-3 py-1 rounded-lg bg-pink-600/80 hover:bg-pink-500 text-white text-[11px] font-bold">Salva risposta</button>
+                                    <button onclick="app.clearReply('${d.id}')" class="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/15 text-white/60 text-[10px]">Svuota</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center mt-2 pt-2 border-t border-white/10">
                             <span class="text-xs text-white/30">${formatTimestamp(data.timestamp)}</span>
                             <button onclick="app.deleteMsg('${d.id}')" class="text-red-400 text-xs hover:text-red-300 transition font-bold">🗑 Elimina</button>
                         </div>`;
@@ -1424,7 +1497,7 @@
             localLikeOverrides.set(messageId, { likes: next, liked: !isLiked });
             if (isLiked) likedMessageIds.delete(messageId); else likedMessageIds.add(messageId);
             saveLikedIdsToStorage(likedMessageIds);
-            sortWallMessages();
+            // Non cambiamo l'ordine delle card dopo il like, solo il valore mostrato
             applyWallFilters();
 
             updateDoc(doc(db, "messages", messageId), { likes: next })
@@ -1459,31 +1532,6 @@
             } else {
                 window.prompt('Copia il link qui sotto:', url);
             }
-        }
-
-        function openMessageModal(messageId) {
-            const msg = wallMessagesCache.find(m => m.id === messageId);
-            if (!msg) return;
-
-            const modal = document.getElementById('messageModal');
-            const titleEl = document.getElementById('modalTo');
-            const classEl = document.getElementById('modalClass');
-            const msgEl = document.getElementById('modalMessage');
-            const timeEl = document.getElementById('modalTime');
-
-            if (!modal || !titleEl || !classEl || !msgEl || !timeEl) return;
-
-            titleEl.textContent = msg.to || 'Destinatario sconosciuto';
-            classEl.textContent = msg.class || '';
-            msgEl.textContent = msg.message || '';
-            timeEl.textContent = formatTimestamp(msg.timestamp);
-
-            modal.classList.remove('hidden');
-        }
-
-        function closeMessageModal() {
-            const modal = document.getElementById('messageModal');
-            if (modal) modal.classList.add('hidden');
         }
 
         document.getElementById('secretTrigger').addEventListener('click', () => {
