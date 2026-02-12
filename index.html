@@ -917,6 +917,7 @@
         }
         const likedMessageIds = loadLikedIdsFromStorage();
         const pendingLikeIds = new Set();
+        const localLikeOverrides = new Map(); // id -> { likes, liked }
 
         function getTimestampMillis(x) {
             if (!x || !x.timestamp) return 0;
@@ -1067,7 +1068,13 @@
             appState.unsubscribeWall = onSnapshot(q, (snapshot) => {
                 wallMessagesCache = [];
                 snapshot.forEach((docSnap) => {
-                    wallMessagesCache.push({ id: docSnap.id, ...docSnap.data() });
+                    const id = docSnap.id;
+                    const baseData = { id, ...docSnap.data() };
+                    const override = localLikeOverrides.get(id);
+                    if (override && typeof override.likes === 'number') {
+                        baseData.likes = override.likes;
+                    }
+                    wallMessagesCache.push(baseData);
                 });
 
                 // Ordina per like (desc) e data (desc)
@@ -1397,21 +1404,23 @@
 
             pendingLikeIds.add(messageId);
 
+            // Aggiorna subito la vista in modo ottimistico (utile su iOS con latenze o rollback)
+            localLikeOverrides.set(messageId, { likes: next, liked: !isLiked });
+            if (isLiked) likedMessageIds.delete(messageId); else likedMessageIds.add(messageId);
+            saveLikedIdsToStorage(likedMessageIds);
+            sortWallMessages();
+            applyWallFilters();
+
             updateDoc(doc(db, "messages", messageId), { likes: next })
                 .then(() => {
-                    // aggiorna cache locale allineata al valore su Firestore
-                    msg.likes = next;
-                    if (isLiked) likedMessageIds.delete(messageId);
-                    else likedMessageIds.add(messageId);
-                    saveLikedIdsToStorage(likedMessageIds);
-                    // riordina per like/data e riapplica i filtri (per il nuovo ordine)
-                    sortWallMessages();
-                    applyWallFilters();
+                    // Scrittura riuscita: non serve più l'override locale, i prossimi snapshot conterranno il valore corretto
+                    localLikeOverrides.delete(messageId);
                 })
                 .catch(err => {
                     console.error('Errore aggiornamento like:', err);
+                    // In caso di errore lascio l'override locale, così il like dell'utente non "torna indietro" a vista
                 })
-                .finally(() => {
+                .then(() => {
                     pendingLikeIds.delete(messageId);
                 });
         }
