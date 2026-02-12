@@ -229,6 +229,126 @@
             font-size: 0.65rem; font-weight: 700; border-radius: 999px;
             padding: 0.1rem 0.55rem; display: inline-block; margin-top: 0.4rem;
         }
+
+        /* WALL CARDS: LIKE & AZIONI */
+        .wall-card {
+            cursor: pointer;
+            position: relative;
+        }
+        .wall-card:hover {
+            transform: translateY(-2px);
+        }
+        .wall-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.75rem;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+        }
+        .wall-like-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.25);
+            background: rgba(0,0,0,0.35);
+            color: rgba(255,255,255,0.8);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s, transform 0.1s;
+        }
+        .wall-like-btn:hover {
+            background: rgba(255,64,129,0.25);
+            border-color: rgba(255,64,129,0.7);
+        }
+        .wall-like-btn.liked {
+            background: rgba(255,64,129,0.35);
+            border-color: rgba(255,64,129,0.9);
+            color: #ffffff;
+            box-shadow: 0 0 12px rgba(255,64,129,0.6);
+        }
+        .wall-share-btn {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.75);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .wall-share-btn:hover {
+            color: #ffffff;
+        }
+
+        /* FILTRI WALL */
+        .filter-input {
+            background: rgba(0,0,0,0.25);
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.25);
+            padding: 0.45rem 0.9rem;
+            font-size: 0.75rem;
+            color: white;
+            outline: none;
+        }
+        .filter-input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+        .filter-input:focus {
+            border-color: #FF4081;
+        }
+        .filter-pill-btn {
+            border-radius: 999px;
+            padding: 0.4rem 0.9rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border: 1px solid rgba(255,255,255,0.25);
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.8);
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .filter-pill-btn:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        /* MODAL DETTAGLIO MESSAGGIO */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 60;
+        }
+        .modal-card {
+            max-width: 520px;
+            width: 100%;
+            border-radius: 1.75rem;
+        }
+
+        /* ADMIN STATS */
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.8rem;
+        }
+        .stats-bar-bg {
+            flex: 1;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.12);
+            overflow: hidden;
+        }
+        .stats-bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #FF4081, #D32F2F);
+            transition: width 0.3s ease;
+        }
     </style>
 </head>
 <body class="font-sans antialiased text-white selection:bg-white selection:text-nw-pink">
@@ -335,11 +455,23 @@
                     <span class="count-badge" id="wallCountBadge">0</span>
                 </p>
             </div>
-            <!-- SEARCH BAR -->
-            <div class="w-full flex justify-center mb-8 animate-slide-up delay-100">
+            <!-- SEARCH & FILTERS -->
+            <div class="w-full flex flex-col items-center gap-4 mb-8 animate-slide-up delay-100">
                 <div class="relative w-full max-w-md">
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">🔍</span>
                     <input type="text" id="wallSearch" class="search-bar pl-10" placeholder="Cerca per nome destinatario...">
+                </div>
+                <div class="flex flex-wrap gap-3 w-full max-w-2xl justify-center text-xs sm:text-sm">
+                    <input type="text" id="wallClassFilter" class="filter-input min-w-[140px]" placeholder="Filtra per classe (es. 5A INF)">
+                    <select id="wallDateFilter" class="filter-input min-w-[140px]">
+                        <option value="all">Tutte le date</option>
+                        <option value="today">Oggi</option>
+                        <option value="7d">Ultimi 7 giorni</option>
+                        <option value="30d">Ultimi 30 giorni</option>
+                    </select>
+                    <button id="wallClearFilters" type="button" class="filter-pill-btn">
+                        Pulisci filtri
+                    </button>
                 </div>
             </div>
             <div id="wallContainer" class="masonry-grid w-full px-2 min-h-[50vh] animate-slide-up delay-100">
@@ -351,6 +483,25 @@
                 </button>
             </div>
         </section>
+
+        <!-- MODAL DETTAGLIO MESSAGGIO WALL -->
+        <div id="messageModal" class="modal-backdrop hidden">
+            <div class="modal-card glass-panel p-8 md:p-10 relative border border-white/20 shadow-2xl">
+                <button onclick="closeMessageModal()" class="absolute top-4 right-4 text-white/60 hover:text-white text-xl font-bold leading-none">
+                    ×
+                </button>
+                <div class="mb-4 border-b border-white/10 pb-3">
+                    <p class="text-xs uppercase tracking-widest text-white/50 font-bold mb-1">Per</p>
+                    <h3 id="modalTo" class="font-display font-black text-2xl text-white"></h3>
+                    <p id="modalClass" class="text-xs text-white/50 mt-1"></p>
+                </div>
+                <p class="text-white font-medium italic text-lg mb-4" id="modalMessage"></p>
+                <p class="msg-timestamp" id="modalTime"></p>
+                <div class="mt-6 text-right">
+                    <button onclick="closeMessageModal()" class="filter-pill-btn">Chiudi</button>
+                </div>
+            </div>
+        </div>
 
         <section id="admin-login-view" class="view-section flex-col items-center justify-center w-full max-w-md px-4 mx-auto">
             <div class="glass-panel p-10 rounded-3xl w-full border-2 border-white/20 shadow-2xl animate-slide-up">
@@ -395,6 +546,7 @@
                 <button onclick="app.adminTab('pending')" id="tab-pending" class="admin-tab-btn active-tab px-5 py-2 rounded-xl font-bold text-sm transition">⏳ Da approvare <span class="count-badge" id="adminPendingCount">0</span></button>
                 <button onclick="app.adminTab('approved')" id="tab-approved" class="admin-tab-btn px-5 py-2 rounded-xl font-bold text-sm transition">✅ Approvati <span class="count-badge" id="adminApprovedCount">0</span></button>
                 <button onclick="app.adminTab('searches')" id="tab-searches" class="admin-tab-btn px-5 py-2 rounded-xl font-bold text-sm transition">🔍 Ricerche <span class="count-badge" id="adminSearchCount">0</span></button>
+                <button onclick="app.adminTab('stats')" id="tab-stats" class="admin-tab-btn px-5 py-2 rounded-xl font-bold text-sm transition">📊 Statistiche</button>
             </div>
             <!-- TAB PANELS -->
             <div class="animate-slide-up delay-200">
@@ -410,6 +562,9 @@
                         <button onclick="app.clearSearches()" class="text-red-400 text-xs font-bold hover:text-red-300 transition">🗑 Svuota</button>
                     </div>
                     <div id="adminSearchesContainer" class="space-y-2 overflow-y-auto flex-1"></div>
+                </div>
+                <div id="adminPanel-stats" class="admin-panel glass-panel p-6 rounded-2xl border-white/20 flex-col h-[65vh] hidden">
+                    <div id="adminStatsContainer" class="space-y-4 overflow-y-auto flex-1 text-sm text-white/80"></div>
                 </div>
             </div>
         </section>
@@ -514,7 +669,7 @@
         updateCountdown();
         setInterval(updateCountdown, 1000);
 
-        const appState = { currentUser: null, unsubscribeWall: null, unsubscribeAdminPending: null, unsubscribeAdminApproved: null, secretClicks: 0 };
+        const appState = { currentUser: null, unsubscribeWall: null, unsubscribeAdminPending: null, unsubscribeAdminApproved: null, unsubscribeAdminStats: null, secretClicks: 0 };
 
         window.app = {
             router: (viewName) => {
@@ -533,13 +688,14 @@
             },
 
             adminTab: (tab) => {
-                ['pending','approved','searches'].forEach(t => {
+                ['pending','approved','searches','stats'].forEach(t => {
                     document.getElementById(`adminPanel-${t}`)?.classList.add('hidden');
                     document.getElementById(`tab-${t}`)?.classList.remove('active-tab');
                 });
                 document.getElementById(`adminPanel-${tab}`)?.classList.remove('hidden');
                 document.getElementById(`tab-${tab}`)?.classList.add('active-tab');
                 if (tab === 'searches') loadAdminSearches();
+                if (tab === 'stats') loadAdminStats();
             },
 
             sendMessage: async (e) => {
@@ -737,6 +893,29 @@
         let wallMessagesCache = [];
         const pendingDataCache = new Map(); // id → {to, message}
 
+        // LIKE STORAGE (per dispositivo)
+        const LIKES_STORAGE_KEY = 'valentines_wall_likes_v1';
+        function loadLikedIdsFromStorage() {
+            try {
+                const raw = localStorage.getItem(LIKES_STORAGE_KEY);
+                if (!raw) return new Set();
+                const arr = JSON.parse(raw);
+                if (!Array.isArray(arr)) return new Set();
+                return new Set(arr);
+            } catch(e) {
+                console.error('Errore lettura like da localStorage', e);
+                return new Set();
+            }
+        }
+        function saveLikedIdsToStorage(set) {
+            try {
+                localStorage.setItem(LIKES_STORAGE_KEY, JSON.stringify(Array.from(set)));
+            } catch(e) {
+                console.error('Errore salvataggio like su localStorage', e);
+            }
+        }
+        const likedMessageIds = loadLikedIdsFromStorage();
+
         function formatTimestamp(ts) {
             if (!ts) return '';
             const date = ts.toDate ? ts.toDate() : new Date(ts);
@@ -756,28 +935,106 @@
         function renderWallCards(messages) {
             const container = document.getElementById('wallContainer');
             container.innerHTML = '';
-            if (messages.length === 0) {
+            if (!messages || messages.length === 0) {
                 container.innerHTML = '<p class="col-span-full text-center py-20 text-white/60">Nessun messaggio trovato.</p>';
                 return;
             }
             messages.forEach((data) => {
+                const safeTo = escapeHtml(data.to || '');
+                const safeClass = escapeHtml(data.class || '');
+                const safeMsg = escapeHtml(data.message || '');
+                const likeCount = typeof data.likes === 'number' ? data.likes : 0;
+                const isLiked = likedMessageIds.has(data.id);
+
                 const card = document.createElement('div');
-                card.className = "masonry-item glass-panel p-6 rounded-3xl animate-slide-up hover:bg-white/5 transition";
+                card.className = "masonry-item";
                 card.innerHTML = `
-                    <div class="mb-3 border-b border-white/10 pb-2">
-                        <h3 class="font-bold text-white text-lg">Per: ${escapeHtml(data.to)}</h3>
-                        <span class="text-xs text-white/50">${data.class || ''}</span>
+                    <div class="wall-card glass-panel p-6 rounded-3xl animate-slide-up hover:bg-white/5 transition" data-id="${data.id}">
+                        <div class="mb-3 border-b border-white/10 pb-2">
+                            <h3 class="font-bold text-white text-lg">Per: ${safeTo}</h3>
+                            <span class="text-xs text-white/50">${safeClass}</span>
+                        </div>
+                        <p class="text-white font-medium italic mb-2">"${safeMsg}"</p>
+                        <p class="msg-timestamp">🕐 ${formatTimestamp(data.timestamp)}</p>
+                        <div class="wall-actions">
+                            <button class="wall-like-btn ${isLiked ? 'liked' : ''}" data-like-id="${data.id}">
+                                <span>${isLiked ? '💗' : '🤍'}</span>
+                                <span>${likeCount}</span>
+                            </button>
+                            <button class="wall-share-btn" data-share-id="${data.id}">Copia link del messaggio</button>
+                        </div>
                     </div>
-                    <p class="text-white font-medium italic">"${escapeHtml(data.message)}"</p>
-                    <p class="msg-timestamp">🕐 ${formatTimestamp(data.timestamp)}</p>
                 `;
                 container.appendChild(card);
             });
+
+            // Event listeners per card (dettaglio), like e share
+            container.querySelectorAll('.wall-card').forEach(cardEl => {
+                const id = cardEl.getAttribute('data-id');
+                cardEl.addEventListener('click', () => openMessageModal(id));
+            });
+            container.querySelectorAll('.wall-like-btn').forEach(btn => {
+                const id = btn.getAttribute('data-like-id');
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    handleLikeToggle(id);
+                });
+            });
+            container.querySelectorAll('.wall-share-btn').forEach(btn => {
+                const id = btn.getAttribute('data-share-id');
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    handleShareLink(id);
+                });
+            });
+        }
+
+        function applyWallFilters() {
+            const searchInput = document.getElementById('wallSearch');
+            const classInput = document.getElementById('wallClassFilter');
+            const dateInput = document.getElementById('wallDateFilter');
+
+            const searchVal = (searchInput?.value || '').toLowerCase().trim();
+            const classVal = (classInput?.value || '').toLowerCase().trim();
+            const dateVal = dateInput?.value || 'all';
+
+            const now = new Date();
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+            const filtered = wallMessagesCache.filter(d => {
+                // filtro per nome
+                if (searchVal) {
+                    const toField = (d.to || '').toLowerCase();
+                    if (!toField.includes(searchVal)) return false;
+                }
+                // filtro per classe
+                if (classVal) {
+                    const cls = (d.class || '').toLowerCase();
+                    if (!cls.includes(classVal)) return false;
+                }
+                // filtro per data
+                if (dateVal !== 'all') {
+                    const ts = d.timestamp;
+                    let dt = null;
+                    if (ts && typeof ts.toDate === 'function') dt = ts.toDate();
+                    else if (ts) dt = new Date(ts);
+                    if (!dt || isNaN(dt.getTime())) return false;
+                    if (dateVal === 'today' && dt < startOfToday) return false;
+                    if (dateVal === '7d' && dt < sevenDaysAgo) return false;
+                    if (dateVal === '30d' && dt < thirtyDaysAgo) return false;
+                }
+                return true;
+            });
+
+            renderWallCards(filtered);
         }
 
         function loadWallMessages() {
             if (appState.unsubscribeWall) appState.unsubscribeWall();
-            const q = query(collection(db, "messages"), where("status", "==", "approved"), orderBy("timestamp", "desc"));
+            // Solo filtro per status; ordinamento gestito lato client per evitare problemi di indice Firestore
+            const q = query(collection(db, "messages"), where("status", "==", "approved"));
             const container = document.getElementById('wallContainer');
             container.innerHTML = '<div class="flex justify-center w-full col-span-full py-20"><div class="loader"></div></div>';
 
@@ -787,34 +1044,43 @@
                     wallMessagesCache.push({ id: docSnap.id, ...docSnap.data() });
                 });
 
+                // Ordina per timestamp (più recenti in alto)
+                wallMessagesCache.sort((a, b) => {
+                    const getTs = (x) => {
+                        if (!x.timestamp) return 0;
+                        if (typeof x.timestamp.toMillis === 'function') return x.timestamp.toMillis();
+                        return new Date(x.timestamp).getTime() || 0;
+                    };
+                    return getTs(b) - getTs(a);
+                });
+
                 // Update live count badge
                 const badge = document.getElementById('wallCountBadge');
                 if (badge) badge.textContent = wallMessagesCache.length;
-
-                // Apply current search filter
-                const searchVal = (document.getElementById('wallSearch')?.value || '').toLowerCase().trim();
-                const filtered = searchVal
-                    ? wallMessagesCache.filter(d => d.to && d.to.toLowerCase().includes(searchVal))
-                    : wallMessagesCache;
 
                 if (snapshot.empty) {
                     container.innerHTML = '<p class="col-span-full text-center py-20 text-white/60">Ancora nessun messaggio.</p>';
                     return;
                 }
-                renderWallCards(filtered);
+
+                applyWallFilters();
+            }, (error) => {
+                console.error('Errore nel caricamento del Wall:', error);
+                container.innerHTML = '<p class="col-span-full text-center py-20 text-red-300">Errore nel caricamento dei messaggi. Riprova più tardi.</p>';
             });
 
-            // Wire up search input (once)
+            // Wire up search & filters input (once)
             const searchInput = document.getElementById('wallSearch');
+            const classInput = document.getElementById('wallClassFilter');
+            const dateInput = document.getElementById('wallDateFilter');
+            const clearBtn = document.getElementById('wallClearFilters');
+
             if (searchInput && !searchInput._listenerAttached) {
                 searchInput._listenerAttached = true;
                 let searchDebounce = null;
                 searchInput.addEventListener('input', () => {
                     const val = searchInput.value.toLowerCase().trim();
-                    const filtered = val
-                        ? wallMessagesCache.filter(d => d.to && d.to.toLowerCase().includes(val))
-                        : wallMessagesCache;
-                    renderWallCards(filtered);
+                    applyWallFilters();
 
                     // Traccia ricerca su Firestore (debounce 1.5s, min 2 char)
                     clearTimeout(searchDebounce);
@@ -828,6 +1094,27 @@
                             } catch(e) {}
                         }, 1500);
                     }
+                });
+            }
+            if (classInput && !classInput._listenerAttached) {
+                classInput._listenerAttached = true;
+                classInput.addEventListener('input', () => {
+                    applyWallFilters();
+                });
+            }
+            if (dateInput && !dateInput._listenerAttached) {
+                dateInput._listenerAttached = true;
+                dateInput.addEventListener('change', () => {
+                    applyWallFilters();
+                });
+            }
+            if (clearBtn && !clearBtn._listenerAttached) {
+                clearBtn._listenerAttached = true;
+                clearBtn.addEventListener('click', () => {
+                    if (searchInput) searchInput.value = '';
+                    if (classInput) classInput.value = '';
+                    if (dateInput) dateInput.value = 'all';
+                    applyWallFilters();
                 });
             }
         }
@@ -936,6 +1223,110 @@
             });
         }
 
+        function loadAdminStats() {
+            const container = document.getElementById('adminStatsContainer');
+            if (!container) return;
+            container.innerHTML = '<div class="flex justify-center py-10"><div class="loader"></div></div>';
+
+            if (appState.unsubscribeAdminStats) appState.unsubscribeAdminStats();
+
+            appState.unsubscribeAdminStats = onSnapshot(collection(db, "messages"), (snap) => {
+                if (snap.empty) {
+                    container.innerHTML = '<p class="text-white/40 text-sm text-center py-10">Ancora nessun messaggio nel sistema.</p>';
+                    return;
+                }
+                let total = snap.size;
+                let approved = 0;
+                let pending = 0;
+                const byClass = {};
+                const byHour = new Array(24).fill(0);
+
+                snap.forEach(d => {
+                    const data = d.data();
+                    if (data.status === 'approved') approved++;
+                    if (data.status === 'pending') pending++;
+
+                    const cls = (data.class || 'Senza classe').toUpperCase();
+                    byClass[cls] = (byClass[cls] || 0) + 1;
+
+                    const ts = data.timestamp;
+                    let dt = null;
+                    if (ts && typeof ts.toDate === 'function') dt = ts.toDate();
+                    else if (ts) dt = new Date(ts);
+                    if (dt && !isNaN(dt.getTime())) {
+                        const h = dt.getHours();
+                        byHour[h] = (byHour[h] || 0) + 1;
+                    }
+                });
+
+                const maxClass = Math.max(...Object.values(byClass));
+                const maxHour = Math.max(...byHour);
+
+                const topHours = byHour
+                    .map((count, hour) => ({ hour, count }))
+                    .filter(x => x.count > 0)
+                    .sort((a,b) => b.count - a.count)
+                    .slice(0,5);
+
+                container.innerHTML = `
+                    <div class="mb-4">
+                        <p class="text-xs uppercase tracking-widest text-white/50 font-bold mb-2">Riepilogo generale</p>
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div class="glass-panel px-4 py-3 rounded-xl border border-white/15">
+                                <p class="text-white/60 text-xs uppercase tracking-widest font-bold">Totale messaggi</p>
+                                <p class="text-2xl font-black text-white mt-1">${total}</p>
+                            </div>
+                            <div class="glass-panel px-4 py-3 rounded-xl border border-white/15">
+                                <p class="text-white/60 text-xs uppercase tracking-widest font-bold">Approvati</p>
+                                <p class="text-lg font-black text-green-300 mt-1">${approved}</p>
+                                <p class="text-xs text-white/40">${pending} in attesa</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <p class="text-xs uppercase tracking-widest text-white/50 font-bold mb-2">Messaggi per classe</p>
+                        <div class="space-y-2">
+                            ${Object.entries(byClass).sort((a,b) => b[1]-a[1]).map(([cls,count]) => {
+                                const width = maxClass ? Math.max(8, (count / maxClass) * 100) : 0;
+                                return `
+                                    <div class="stats-row">
+                                        <span class="font-mono text-white/70 min-w-[90px]">${escapeHtml(cls)}</span>
+                                        <div class="stats-bar-bg">
+                                            <div class="stats-bar-fill" style="width:${width}%"></div>
+                                        </div>
+                                        <span class="text-white/60 font-mono pl-1">${count}</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <p class="text-xs uppercase tracking-widest text-white/50 font-bold mb-2">Orari di invio più attivi</p>
+                        <div class="space-y-2">
+                            ${topHours.map(item => {
+                                const width = maxHour ? Math.max(10, (item.count / maxHour) * 100) : 0;
+                                const label = `${item.hour.toString().padStart(2,'0')}:00`;
+                                return `
+                                    <div class="stats-row">
+                                        <span class="font-mono text-white/70 min-w-[70px]">${label}</span>
+                                        <div class="stats-bar-bg">
+                                            <div class="stats-bar-fill" style="width:${width}%"></div>
+                                        </div>
+                                        <span class="text-white/60 font-mono pl-1">${item.count}</span>
+                                    </div>
+                                `;
+                            }).join('') || '<p class="text-white/50 text-xs">Ancora nessun dato sugli orari.</p>'}
+                        </div>
+                    </div>
+                `;
+            }, (error) => {
+                console.error('Errore caricamento statistiche admin:', error);
+                container.innerHTML = '<p class="text-red-300 text-sm text-center py-10">Errore nel caricamento delle statistiche.</p>';
+            });
+        }
+
         function escapeHtml(text) { if (!text) return ""; return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
         onAuthStateChanged(auth, (user) => {
@@ -975,6 +1366,70 @@
                 }, 200);
             }
         })();
+
+        // LIKE, SHARE & MODAL DETTAGLIO
+        function handleLikeToggle(messageId) {
+            const msg = wallMessagesCache.find(m => m.id === messageId);
+            if (!msg) return;
+            const current = typeof msg.likes === 'number' ? msg.likes : 0;
+            const isLiked = likedMessageIds.has(messageId);
+            const next = isLiked ? Math.max(0, current - 1) : current + 1;
+
+            updateDoc(doc(db, "messages", messageId), { likes: next })
+                .then(() => {
+                    msg.likes = next;
+                    if (isLiked) likedMessageIds.delete(messageId);
+                    else likedMessageIds.add(messageId);
+                    saveLikedIdsToStorage(likedMessageIds);
+                    applyWallFilters();
+                })
+                .catch(err => console.error('Errore aggiornamento like:', err));
+        }
+
+        function handleShareLink(messageId) {
+            const msg = wallMessagesCache.find(m => m.id === messageId);
+            if (!msg || !msg.to) return;
+            const searchParam = encodeURIComponent(msg.to);
+            const base = window.location.origin + window.location.pathname;
+            const url = `${base}?cerca=${searchParam}`;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url)
+                    .then(() => {
+                        alert('Link copiato negli appunti!');
+                    })
+                    .catch(() => {
+                        window.prompt('Copia il link qui sotto:', url);
+                    });
+            } else {
+                window.prompt('Copia il link qui sotto:', url);
+            }
+        }
+
+        function openMessageModal(messageId) {
+            const msg = wallMessagesCache.find(m => m.id === messageId);
+            if (!msg) return;
+
+            const modal = document.getElementById('messageModal');
+            const titleEl = document.getElementById('modalTo');
+            const classEl = document.getElementById('modalClass');
+            const msgEl = document.getElementById('modalMessage');
+            const timeEl = document.getElementById('modalTime');
+
+            if (!modal || !titleEl || !classEl || !msgEl || !timeEl) return;
+
+            titleEl.textContent = msg.to || 'Destinatario sconosciuto';
+            classEl.textContent = msg.class || '';
+            msgEl.textContent = msg.message || '';
+            timeEl.textContent = formatTimestamp(msg.timestamp);
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeMessageModal() {
+            const modal = document.getElementById('messageModal');
+            if (modal) modal.classList.add('hidden');
+        }
 
         document.getElementById('secretTrigger').addEventListener('click', () => {
             appState.secretClicks++;
