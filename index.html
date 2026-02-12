@@ -916,6 +916,16 @@
             }
         }
         const likedMessageIds = loadLikedIdsFromStorage();
+        const pendingLikeIds = new Set();
+
+        function getTimestampMillis(x) {
+            if (!x || !x.timestamp) return 0;
+            const ts = x.timestamp;
+            if (typeof ts.toMillis === 'function') return ts.toMillis();
+            const d = ts.toDate ? ts.toDate() : new Date(ts);
+            const ms = d.getTime();
+            return isNaN(ms) ? 0 : ms;
+        }
 
         function formatTimestamp(ts) {
             if (!ts) return '';
@@ -1036,6 +1046,17 @@
             renderWallCards(filtered);
         }
 
+        function sortWallMessages() {
+            const getLikes = (item) => (typeof item.likes === 'number' ? item.likes : 0);
+            wallMessagesCache.sort((a, b) => {
+                const diffLikes = getLikes(b) - getLikes(a);
+                if (diffLikes !== 0) return diffLikes;
+                const ta = getTimestampMillis(a);
+                const tb = getTimestampMillis(b);
+                return tb - ta; // più recenti prima a parità di like
+            });
+        }
+
         function loadWallMessages() {
             if (appState.unsubscribeWall) appState.unsubscribeWall();
             // Solo filtro per status; ordinamento gestito lato client per evitare problemi di indice Firestore
@@ -1049,15 +1070,8 @@
                     wallMessagesCache.push({ id: docSnap.id, ...docSnap.data() });
                 });
 
-                // Ordina per timestamp (più recenti in alto)
-                wallMessagesCache.sort((a, b) => {
-                    const getTs = (x) => {
-                        if (!x.timestamp) return 0;
-                        if (typeof x.timestamp.toMillis === 'function') return x.timestamp.toMillis();
-                        return new Date(x.timestamp).getTime() || 0;
-                    };
-                    return getTs(b) - getTs(a);
-                });
+                // Ordina per like (desc) e data (desc)
+                sortWallMessages();
 
                 // Update live count badge
                 const badge = document.getElementById('wallCountBadge');
@@ -1372,23 +1386,34 @@
             }
         })();
 
-        // LIKE, SHARE & MODAL DETTAGLIO
+        // LIKE & SHARE (senza modale di dettaglio)
         function handleLikeToggle(messageId) {
+            if (pendingLikeIds.has(messageId)) return; // evita doppi tap rapidi
             const msg = wallMessagesCache.find(m => m.id === messageId);
             if (!msg) return;
             const current = typeof msg.likes === 'number' ? msg.likes : 0;
             const isLiked = likedMessageIds.has(messageId);
             const next = isLiked ? Math.max(0, current - 1) : current + 1;
 
+            pendingLikeIds.add(messageId);
+
             updateDoc(doc(db, "messages", messageId), { likes: next })
                 .then(() => {
+                    // aggiorna cache locale allineata al valore su Firestore
                     msg.likes = next;
                     if (isLiked) likedMessageIds.delete(messageId);
                     else likedMessageIds.add(messageId);
                     saveLikedIdsToStorage(likedMessageIds);
+                    // riordina per like/data e riapplica i filtri (per il nuovo ordine)
+                    sortWallMessages();
                     applyWallFilters();
                 })
-                .catch(err => console.error('Errore aggiornamento like:', err));
+                .catch(err => {
+                    console.error('Errore aggiornamento like:', err);
+                })
+                .finally(() => {
+                    pendingLikeIds.delete(messageId);
+                });
         }
 
         function handleShareLink(messageId) {
