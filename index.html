@@ -670,7 +670,7 @@
         updateCountdown();
         setInterval(updateCountdown, 1000);
 
-        const appState = { currentUser: null, unsubscribeWall: null, unsubscribeAdminPending: null, unsubscribeAdminApproved: null, unsubscribeAdminStats: null, secretClicks: 0 };
+        const appState = { currentUser: null, unsubscribeWall: null, unsubscribeAdminPending: null, unsubscribeAdminApproved: null, unsubscribeAdminStats: null, wallInitialSorted: false, secretClicks: 0 };
 
         window.app = {
             router: (viewName) => {
@@ -1066,7 +1066,11 @@
             container.innerHTML = '<div class="flex justify-center w-full col-span-full py-20"><div class="loader"></div></div>';
 
             appState.unsubscribeWall = onSnapshot(q, (snapshot) => {
-                wallMessagesCache = [];
+                // mappa ordine precedente (per mantenere posizione a schermo)
+                const prevOrder = new Map();
+                wallMessagesCache.forEach((m, idx) => prevOrder.set(m.id, idx));
+
+                const nextArray = [];
                 snapshot.forEach((docSnap) => {
                     const id = docSnap.id;
                     const baseData = { id, ...docSnap.data() };
@@ -1074,11 +1078,23 @@
                     if (override && typeof override.likes === 'number') {
                         baseData.likes = override.likes;
                     }
-                    wallMessagesCache.push(baseData);
+                    nextArray.push(baseData);
                 });
 
-                // Ordina per like (desc) e data (desc)
-                sortWallMessages();
+                if (!appState.wallInitialSorted) {
+                    // Primo caricamento: ordina per like (desc) e data (desc)
+                    wallMessagesCache = nextArray;
+                    sortWallMessages();
+                    appState.wallInitialSorted = true;
+                } else {
+                    // Aggiornamenti successivi: mantieni l'ordine visivo precedente, così i like non "saltano"
+                    nextArray.sort((a, b) => {
+                        const ia = prevOrder.has(a.id) ? prevOrder.get(a.id) : Number.MAX_SAFE_INTEGER;
+                        const ib = prevOrder.has(b.id) ? prevOrder.get(b.id) : Number.MAX_SAFE_INTEGER;
+                        return ia - ib;
+                    });
+                    wallMessagesCache = nextArray;
+                }
 
                 // Update live count badge
                 const badge = document.getElementById('wallCountBadge');
