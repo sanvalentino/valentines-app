@@ -621,7 +621,8 @@
 
         function createHeartsBg() {
             const container = document.getElementById('heartsBg');
-            const heartCount = 35; 
+            // leggermente ridotto per alleggerire la pagina senza perdere l'effetto
+            const heartCount = 22; 
             const colors = ['#ffffff', '#FF4081', '#FFB7C5'];
             container.innerHTML = '';
             for (let i = 0; i < heartCount; i++) {
@@ -968,25 +969,29 @@
                 container.appendChild(card);
             });
 
-            // Event listeners per card (dettaglio), like e share
-            container.querySelectorAll('.wall-card').forEach(cardEl => {
-                const id = cardEl.getAttribute('data-id');
-                cardEl.addEventListener('click', () => openMessageModal(id));
-            });
-            container.querySelectorAll('.wall-like-btn').forEach(btn => {
-                const id = btn.getAttribute('data-like-id');
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    handleLikeToggle(id);
+            // Event delegation per like/share (niente più ingrandimento modale)
+            if (!container._wallEventsBound) {
+                container._wallEventsBound = true;
+                container.addEventListener('click', (e) => {
+                    const likeBtn = e.target.closest('[data-like-id]');
+                    if (likeBtn) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const id = likeBtn.getAttribute('data-like-id');
+                        handleLikeToggle(id);
+                        return;
+                    }
+                    const shareBtn = e.target.closest('[data-share-id]');
+                    if (shareBtn) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const id = shareBtn.getAttribute('data-share-id');
+                        handleShareLink(id);
+                        return;
+                    }
+                    // clic sulle card non fanno più aprire la modale
                 });
-            });
-            container.querySelectorAll('.wall-share-btn').forEach(btn => {
-                const id = btn.getAttribute('data-share-id');
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    handleShareLink(id);
-                });
-            });
+            }
         }
 
         function applyWallFilters() {
